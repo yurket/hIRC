@@ -1,1 +1,10 @@
-USER logotest port-191-adslby-pool46.infonet.by irc.bynets.org :Logging Bot
+USER lite5 0 * :Logging Bot
+
+# register sequence is:
+client: PASS some_pass
+client: NICK nick
+server: PING :server_name
+client: PONG nick :server_name
+client: USER nick 0 * :Real name
+
+
