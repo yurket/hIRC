@@ -72,8 +72,7 @@ int main()
         cin.getline(send_buf, sizeof(send_buf));
         strcat(send_buf, DELIMITER);
 
-        // don't send trailing '\0'
-        short send_size = strlen(send_buf) - 1;
+        short send_size = strlen(send_buf);
         res = send(sock, send_buf, send_size, NO_FLAGS);
         if (res == -1)
         {
