@@ -52,6 +52,7 @@ int main()
     }
 
     while(1){
+        clog << '.' << endl;
         memset(&recv_buf, 0, sizeof(recv_buf));
         res = recv(sock, recv_buf, RECV_LEN, NO_FLAGS);
         if (res == -1)
@@ -80,8 +81,8 @@ int main()
         }
         else
         {
-            cout << res << " bytes sent... " << endl;
-            cout << " (echoed) " << send_buf << endl;
+            clog << res << " bytes sent... " << endl;
+            clog << " (echoed) " << send_buf << endl;
         }
 
     }
