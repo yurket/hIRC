@@ -18,6 +18,26 @@ const char *irc_bynets_org = "86.57.151.5";
 const char DELIMITER[2] = {'\r', '\n' };
 const short NO_FLAGS = 0;
 
+const short PRINT_LEN = 16;
+
+int form_message(char *send_buf)
+{
+    memset(send_buf, 0, SEND_LEN);
+
+    cout << "enter command: " << endl;
+    cin.getline(send_buf, SEND_LEN);
+
+    if (strncmp(send_buf, "pong", 4) == 0)
+    {
+        memset(send_buf, 0, SEND_LEN);
+        strcat(send_buf, "PONG ");
+        strcat(send_buf, irc_bynets_org);
+    }
+    strcat(send_buf, DELIMITER);
+
+    return 0;
+}
+
 int main()
 {
     int sock = 0;
@@ -52,8 +72,7 @@ int main()
     }
 
     while(1){
-        clog << '.' << endl;
-        memset(&recv_buf, 0, sizeof(recv_buf));
+        memset(recv_buf, 0, sizeof(recv_buf));
         res = recv(sock, recv_buf, RECV_LEN, NO_FLAGS);
         if (res == -1)
         {
@@ -65,12 +84,7 @@ int main()
         cout << "received: " << endl;
         cout << recv_buf << endl;
 
-
-        memset(&send_buf, 0, sizeof(send_buf));
-
-        cout << "enter command: " << endl;
-        cin.getline(send_buf, sizeof(send_buf));
-        strcat(send_buf, DELIMITER);
+        form_message(send_buf);
 
         short send_size = strlen(send_buf);
         res = send(sock, send_buf, send_size, NO_FLAGS);
