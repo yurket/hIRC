@@ -65,6 +65,9 @@ int main()
         cout << "received: " << endl;
         cout << recv_buf << endl;
 
+
+        memset(&send_buf, 0, sizeof(send_buf));
+
         cout << "enter command: " << endl;
         cin.getline(send_buf, sizeof(send_buf));
         strcat(send_buf, DELIMITER);
