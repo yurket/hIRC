@@ -57,7 +57,7 @@ int main()
         if (res == -1)
         {
             perror("recv failed!");
-            
+
             close(sock);
             _exit(1);
         }
@@ -67,14 +67,14 @@ int main()
         cout << "enter command: " << endl;
         cin.getline(send_buf, sizeof(send_buf));
         strcat(send_buf, DELIMITER);
- 
+
         // don't send trailing '\0'
         short send_size = strlen(send_buf) - 1;
         res = send(sock, send_buf, send_size, NO_FLAGS);
         if (res == -1)
         {
             perror("send failed!");
-            
+
             close(sock);
             _exit(1);
         }
