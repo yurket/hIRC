@@ -15,6 +15,7 @@ public:
     string nick;
     string real_name;
     string server_ip;
+    unsigned short int server_port;
     string server_name;
  
     XmlConfig(string filename);
@@ -43,6 +44,7 @@ void XmlConfig::load(const string &filename)
     nick = pt.get("config.nick", "t3st_n1ck");
     real_name = pt.get("config.real_name", "(empty)");
     server_ip = pt.get<string>("config.server_ip");
+    server_port = pt.get<unsigned short int>("config.server_port");
     server_name = pt.get<string>("config.server_name");
 }
 
@@ -52,6 +54,7 @@ void XmlConfig::print_config()
     clog << "nick: " << this->nick << endl;
     clog << "real name: " << this->real_name << endl;
     clog << "server_ip: " << this->server_ip << endl;
+    clog << "server_port: " << this->server_port << endl;
     clog << "server_name: " << this->server_name << endl;
 
 }
