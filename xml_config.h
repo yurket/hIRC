@@ -1,3 +1,6 @@
+#ifndef XML_CONFIG_H
+#define XML_CONFIG_H
+
 #include <iostream>
 
 #include <boost/property_tree/ptree.hpp>
@@ -58,3 +61,6 @@ void XmlConfig::print_config()
     clog << "server_name: " << this->server_name << endl;
 
 }
+
+
+#endif  // XML_CONFIG_H
