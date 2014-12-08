@@ -6,5 +6,5 @@ client: NICK nick
 server: PING :server_name
 client: PONG nick :server_name
 client: USER nick 0 * :Real name
-
+USER lite5 0 * :Just testing
 
