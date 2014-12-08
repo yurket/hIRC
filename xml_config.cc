@@ -1,4 +1,4 @@
-#include "xml_config.hpp"
+#include "xml_config.h"
 
 int main()
 {
