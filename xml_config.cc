@@ -2,8 +2,7 @@
 
 int main()
 {
-    XmlConfig conf("test.xml");
-    conf.load();
+    XmlConfig conf("irc_config.xml");
     conf.print_config();
 
     return 0;

@@ -32,13 +32,9 @@ public:
 XmlConfig::XmlConfig(string filename)
     : m_filename(filename)
 {
-    clog << "CTOR" << endl;
+    load(filename);
 }
 
-void XmlConfig::load()
-{
-    this->load(this->m_filename);
-}
 void XmlConfig::load(const string &filename)
 {
     using boost::property_tree::ptree;
