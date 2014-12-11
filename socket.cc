@@ -18,8 +18,6 @@ const char *irc_bynets_org = "86.57.151.5";
 const char DELIMITER[2] = {'\r', '\n' };
 const short NO_FLAGS = 0;
 
-const short PRINT_LEN = 16;
-
 int form_message(char *send_buf)
 {
     memset(send_buf, 0, SEND_LEN);
