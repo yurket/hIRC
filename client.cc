@@ -7,6 +7,7 @@
 #include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <poll.h>
 #include <unistd.h>
 
 
@@ -57,20 +58,40 @@ void IrcClient::Communicate()
 {
     char recv_buf[kRecvBufLen];
     char send_buf[kSendBufLen];
-    int res = 0;
+    int res = 0, poll_res = 0;
     unsigned int send_size = 0;
+    struct pollfd fds[1];
+    fds[0].fd = socket_;
+    fds[0].events = POLLIN;
+    fds[0].revents = 0;
+
+    // timeout in msecs
+    const unsigned int timeout = 1000;
+    cout << "test: " << 0x001 << endl;
     while(1){
-        memset(recv_buf, 0, sizeof(recv_buf));
-        res = recv(socket_, recv_buf, sizeof(recv_buf), kNoFlags);
-        if (res == -1)
+        poll_res = poll(fds, 1, timeout);
+        cout << "poll returned: " << poll_res << endl;
+        if (poll_res > 0){
+            cout << "revents: " << fds[0].revents << endl;
+            memset(recv_buf, 0, sizeof(recv_buf));
+            res = recv(socket_, recv_buf, sizeof(recv_buf), kNoFlags);
+            if (res == -1)
+            {
+                perror("recv failed!");
+
+                close(socket_);
+                _exit(1);
+            }
+            cout << "received: " << endl;
+            cout << recv_buf << endl;
+        }
+        else if (poll_res == -1)
         {
-            perror("recv failed!");
+            perror("poll failed!");
 
             close(socket_);
             _exit(1);
         }
-        cout << "received: " << endl;
-        cout << recv_buf << endl;
 
         FormMessage(recv_buf, send_buf);
 
