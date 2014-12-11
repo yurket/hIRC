@@ -5,13 +5,18 @@
 
 
 class IrcClient{
+ private:
     int socket_;
-    XmlConfig *config_;
-    
-public:
-    IrcClient();
-    IrcClient(const std::string &config_filename);
-    void Connect(const std::string server_ip);
+    static const unsigned int kRecvBufLen = 1024;
+    static const unsigned int kSendBufLen = 512;
+    static const unsigned int kNoFlags = 0;
+
+
+    void FormMessage(const char *in_buf, char *out_buf);
+
+ public:
+    void Connect(const std::string server_ip="", const unsigned int server_port=6667);
+    void Communicate();
     void Register(const std::string nick, const std::string real_name);
     void Disconnect();
 };
