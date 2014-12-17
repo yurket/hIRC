@@ -10,6 +10,7 @@
 #include <poll.h>
 #include <unistd.h>
 
+#include <boost/algorithm/string/case_conv.hpp>
 
 void IrcClient::Connect(const std::string server_ip, const unsigned int server_port)
 {
@@ -42,15 +43,42 @@ void IrcClient::Connect(const std::string server_ip, const unsigned int server_p
     }
 }
 
+bool IfPingRequest(const char *recv_buf)
+{
+    const std::string kPingString = std::string("ping");
+
+    std::string received_str = std::string(recv_buf);
+    boost::algorithm::to_lower(received_str);
+    if (received_str.find(kPingString) == std::string::npos)
+        return false;
+    else
+        return true;
+}
+
+void IrcClient::FormPongResponse(const char *recv_buf, char *send_buf)
+{
+
+}
+
+
+
 void IrcClient::FormMessage(const char *recv_buf, char *send_buf)
 {
     const char kDelimiter[2] = {'\r', '\n'};
 
     memset(send_buf, 0, kSendBufLen);
 
-    cout << "enter command: " << endl;
-    cin.getline(send_buf, kSendBufLen);
-    strncat(send_buf, kDelimiter, 2);
+    if (IfPingRequest(recv_buf))
+    {
+        cout << "PING came -> answering PONG" << endl;
+        FormPongResponse(recv_buf, send_buf);
+    }
+    else
+    {
+        cout << "enter command: " << endl;
+        cin.getline(send_buf, kSendBufLen);
+        strncat(send_buf, kDelimiter, 2);
+    }
 }
 
 
@@ -67,12 +95,10 @@ void IrcClient::Communicate()
 
     // timeout in msecs
     const unsigned int timeout = 1000;
-    cout << "test: " << 0x001 << endl;
+
     while(1){
         poll_res = poll(fds, 1, timeout);
-        cout << "poll returned: " << poll_res << endl;
         if (poll_res > 0){
-            cout << "revents: " << fds[0].revents << endl;
             memset(recv_buf, 0, sizeof(recv_buf));
             res = recv(socket_, recv_buf, sizeof(recv_buf), kNoFlags);
             if (res == -1)
