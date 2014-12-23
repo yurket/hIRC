@@ -10,7 +10,6 @@
 #include <poll.h>
 #include <unistd.h>
 
-#include <boost/algorithm/string/case_conv.hpp>
 
 void IrcClient::Connect(const std::string server_ip, const unsigned int server_port)
 {
@@ -45,10 +44,9 @@ void IrcClient::Connect(const std::string server_ip, const unsigned int server_p
 
 bool IfPingRequest(const char *recv_buf)
 {
-    const std::string kPingString = std::string("ping");
+    const std::string kPingString = std::string("\nPING");
 
     std::string received_str = std::string(recv_buf);
-    boost::algorithm::to_lower(received_str);
     if (received_str.find(kPingString) == std::string::npos)
         return false;
     else
@@ -213,6 +211,7 @@ int main()
     IrcClient client = IrcClient();
     XmlConfig config = XmlConfig("freenode.xml");
     config.print_config();
+    cout << std::endl << std::endl;
 
     client.Connect(config.server_ip, config.server_port);
     client.Register(config.nick, config.real_name);
