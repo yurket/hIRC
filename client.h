@@ -14,6 +14,7 @@ class IrcClient{
 
     void FormMessage(const char *in_buf, char *out_buf);
     void FormPongResponse(const char *recv_buf, char *send_buf);
+    void SendOrDie(const std::string &send_str, bool verbose=false);
 
  public:
     void Connect(const std::string server_ip="", const unsigned int server_port=6667);

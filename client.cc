@@ -81,6 +81,26 @@ void IrcClient::FormMessage(const char *recv_buf, char *send_buf)
     }
 }
 
+/*
+  Send *buf* of length *len* using opened class member *socket_*.
+ */
+void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
+{
+    unsigned int res = 0;
+    res = send(socket_, send_str.c_str(), send_str.length(), kNoFlags);
+    if (res == -1)
+    {
+        perror("send failed!");
+
+        close(socket_);
+        _exit(1);
+    }
+    else if(verbose)
+    {
+        cout << send_str << " successfully sent" << std::endl;
+    }
+}
+
 
 // The quotation from RFC 2812:
 /*
@@ -107,37 +127,19 @@ void IrcClient::FormMessage(const char *recv_buf, char *send_buf)
  */
 void IrcClient::Register(const std::string nick, const std::string real_name)
 {
-    unsigned int res = 0;
     std::string send_str;
+    bool verbose=true;
 
     // 1. Pass message
     send_str.append("PASS 12345\n");
-    res = send(socket_, send_str.c_str(), send_str.length(), kNoFlags);
-    if (res == -1)
-    {
-        perror("send failed!");
-
-        close(socket_);
-        _exit(1);
-    }
-    else
-        cout << send_str << " successfully sent" << std::endl;
+    SendOrDie(send_str, verbose);
 
     // 2. Nick message
     send_str.clear();
     send_str.append("NICK ");
     send_str.append(nick);
     send_str.append("\n");
-    res = send(socket_, send_str.c_str(), send_str.length(), kNoFlags);
-    if (res == -1)
-    {
-        perror("send failed!");
-
-        close(socket_);
-        _exit(1);
-    }
-    else
-        cout << send_str << " successfully sent" << std::endl;
+    SendOrDie(send_str, verbose);
 
     // 3. User message
     send_str.clear();
@@ -146,17 +148,7 @@ void IrcClient::Register(const std::string nick, const std::string real_name)
     send_str.append(" 0 * :");
     send_str.append(real_name);
     send_str.append("\n");
-    res = send(socket_, send_str.c_str(), send_str.length(), kNoFlags);
-    if (res == -1)
-    {
-        perror("send failed!");
-
-        close(socket_);
-        _exit(1);
-    }
-    else
-        cout << send_str << " successfully sent" << std::endl;
-
+    SendOrDie(send_str, verbose);
 }
 
 void IrcClient::Communicate()
@@ -212,7 +204,6 @@ void IrcClient::Communicate()
             clog << res << " bytes sent... " << endl;
             clog << " (echoed) " << send_buf << endl;
         }
-
     }
 
 }
