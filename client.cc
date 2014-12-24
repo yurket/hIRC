@@ -129,6 +129,7 @@ void IrcClient::Register(const std::string nick, const std::string real_name)
     bool verbose=true;
 
     // 1. Pass message
+    send_str.clear();
     send_str.append("PASS 12345\n");
     SendOrDie(send_str, verbose);
 
@@ -167,7 +168,8 @@ void IrcClient::Communicate()
         poll_res = poll(fds, 1, timeout);
         if (poll_res > 0){
             memset(recv_buf, 0, sizeof(recv_buf));
-            res = recv(socket_, recv_buf, sizeof(recv_buf), kNoFlags);
+            // reduce receive length by 1 to have null-terminated string
+            res = recv(socket_, recv_buf, sizeof(recv_buf)-1, kNoFlags);
             if (res == -1)
             {
                 perror("recv failed!");
