@@ -141,24 +141,15 @@ void IrcClient::Register(const std::string nick, const std::string real_name)
     bool verbose=true;
 
     // 1. Pass message
-    send_str.clear();
-    send_str.append("PASS 12345\n");
+    send_str = "PASS 12345\r\n";
     SendOrDie(send_str, verbose);
 
     // 2. Nick message
-    send_str.clear();
-    send_str.append("NICK ");
-    send_str.append(nick);
-    send_str.append("\n");
+    send_str = "NICK " + nick + "\r\n";
     SendOrDie(send_str, verbose);
 
     // 3. User message
-    send_str.clear();
-    send_str.append("USER ");
-    send_str.append(nick);
-    send_str.append(" 0 * :");
-    send_str.append(real_name);
-    send_str.append("\n");
+    send_str = "USER " + nick + " 0 * :" + real_name + "\r\n";
     SendOrDie(send_str, verbose);
 }
 
