@@ -16,7 +16,7 @@ class Logger
 
 
 
-Logger::Logger(const std::string &filename)
+Logger::Logger(const std::string &filename="test.log")
 {
     file_.open(filename.c_str(), std::ofstream::out | std::ofstream::app);
 }
@@ -29,6 +29,7 @@ Logger::~Logger()
 void Logger::Log(const std::string &s)
 {
     file_ << s;
+    file_.flush();
 }
 
 

@@ -11,6 +11,17 @@
 #include <unistd.h>
 
 
+IrcClient::IrcClient()
+{
+    logger_ = new Logger();
+}
+
+IrcClient::~IrcClient()
+{
+    delete logger_;
+}
+
+
 void IrcClient::Connect(const std::string server_ip, const unsigned int server_port)
 {
     int res = 0;
@@ -40,6 +51,7 @@ void IrcClient::Connect(const std::string server_ip, const unsigned int server_p
         close(socket_);
         _exit(1);
     }
+    logger_->Log("Successfully connected!");
 }
 
 bool IfPingRequest(const char *recv_buf)
