@@ -51,7 +51,7 @@ void IrcClient::Connect(const std::string server_ip, const unsigned int server_p
         close(socket_);
         _exit(1);
     }
-    logger_->Log("Successfully connected!");
+    logger_->Log("Successfully connected.\n");
 }
 
 bool IfPingRequest(const char *recv_buf)
@@ -151,6 +151,8 @@ void IrcClient::Register(const std::string nick, const std::string real_name)
     // 3. User message
     send_str = "USER " + nick + " 0 * :" + real_name + "\r\n";
     SendOrDie(send_str, verbose);
+
+    logger_->Log("Successfully registered with name " + nick + '\n');
 }
 
 void IrcClient::Communicate()
@@ -191,6 +193,7 @@ void IrcClient::Communicate()
             _exit(1);
         }
 
+	logger_->Log(recv_buf);
         FormMessage(recv_buf, send_buf);
 
         send_size = strlen(send_buf);
