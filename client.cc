@@ -25,9 +25,15 @@ void IrcClient::SendPONG(const char *recv_buf)
     std::string received_str = std::string(recv_buf);
     size_t pos = received_str.find(":");
 
-    std::string pong_msg = kPongString + /*nick should be here*/ " lite5 ";
+    std::string nick = std::string("test_nick123");
+    if (config_ != NULL)
+        nick = config_->nick;
+
+    // TODO: sprintf?
+    std::string pong_msg = kPongString + " " + nick + " ";
     if (pos != string::npos)
     {
+        // msg is smth like ":77E488E" for bynets server
         std::string msg = received_str.substr(pos);
         pong_msg += msg;
         std::clog << "[D] Sending PONG msg: " << pong_msg << std::endl;
@@ -97,11 +103,21 @@ void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
 IrcClient::IrcClient()
 {
     logger_ = new Logger();
+    config_ = NULL;
 }
+
+IrcClient::IrcClient(XmlConfig &config)
+{
+    logger_ = new Logger();
+    // Copy Constructor
+    config_ = new XmlConfig(config);
+}
+
 
 IrcClient::~IrcClient()
 {
     delete logger_;
+    delete config_;
 }
 
 
@@ -245,8 +261,8 @@ void IrcClient::Communicate()
 
 int main()
 {
-    IrcClient client = IrcClient();
     XmlConfig config = XmlConfig("bynets.xml");
+    IrcClient client = IrcClient(config);
     config.print_config();
     cout << std::endl << std::endl;
 

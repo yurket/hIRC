@@ -11,6 +11,7 @@ class IrcClient{
  private:
     Logger *logger_;
     int socket_;
+    XmlConfig *config_;
     static const unsigned int kRecvBufLen = 1024;
     static const unsigned int kSendBufLen = 512;
     static const unsigned int kNoFlags = 0;
@@ -22,6 +23,7 @@ class IrcClient{
 
  public:
     IrcClient();
+    IrcClient(XmlConfig &conf);
     ~IrcClient();
     void Connect(const std::string server_ip="", const unsigned int server_port=6667);
     void Communicate();
