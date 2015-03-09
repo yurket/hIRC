@@ -54,9 +54,40 @@ void IrcClient::Connect(const std::string server_ip, const unsigned int server_p
     logger_->Log("Successfully connected.\n");
 }
 
-bool IfPingRequest(const char *recv_buf)
+// TODO: Try to do static SendPONG? what approach is better?
+
+void IrcClient::SendPONG(const char *recv_buf)
 {
-    const std::string kPingString = std::string("\nPING");
+    if (recv_buf == NULL)
+        return ;
+
+    clog << "Ready to send PONG" << endl;
+    const std::string kPongString = std::string("PONG");
+
+    std::string received_str = std::string(recv_buf);
+    size_t pos = received_str.find(":");
+
+    std::string pong_msg = kPongString + /*nick should be here*/ " lite5 ";
+    if (pos != string::npos)
+    {
+        std::string msg = received_str.substr(pos);
+        pong_msg += msg;
+        std::clog << "[D] Sending PONG msg: " << pong_msg << std::endl;
+        SendOrDie(pong_msg);
+    }
+    else
+    {
+        perror("SendPONG() error!");
+        return;
+    }
+}
+
+static bool IfPingRequest(const char *recv_buf)
+{
+    if (recv_buf == NULL)
+        return false;
+
+    const std::string kPingString = std::string("PING");
 
     std::string received_str = std::string(recv_buf);
     if (received_str.find(kPingString) == std::string::npos)
@@ -65,31 +96,22 @@ bool IfPingRequest(const char *recv_buf)
         return true;
 }
 
-void IrcClient::FormPongResponse(const char *recv_buf, char *send_buf)
+
+/*
+  returns *TRUE*, if message was automatically handled and
+  *FALSE* otherwise.
+ */
+bool IrcClient::AutomaticlyHandledMsg(const char *recv_buf)
 {
-
-}
-
-
-
-void IrcClient::FormMessage(const char *recv_buf, char *send_buf)
-{
-    const char kDelimiter[2] = {'\r', '\n'};
-
-    memset(send_buf, 0, kSendBufLen);
-
+    clog << "[D] got: " << endl << recv_buf << endl;
     if (IfPingRequest(recv_buf))
     {
-        cout << "PING came -> answering PONG" << endl;
-        FormPongResponse(recv_buf, send_buf);
+        SendPONG(recv_buf);
+        return true;
     }
-    else
-    {
-        cout << "enter command: " << endl;
-        cin.getline(send_buf, kSendBufLen);
-        strncat(send_buf, kDelimiter, 2);
-    }
+    return false;
 }
+
 
 /*
   Send *buf* of length *len* using opened class member *socket_*.
@@ -194,25 +216,28 @@ void IrcClient::Communicate()
         }
 
 	logger_->Log(recv_buf);
-        FormMessage(recv_buf, send_buf);
+        if (AutomaticlyHandledMsg(recv_buf))
+            continue;
 
-        send_size = strlen(send_buf);
-        res = send(socket_, send_buf, send_size, kNoFlags);
-        if (res == -1)
-        {
-            perror("send failed!");
+        // send_size = strlen(send_buf);
+        // res = send(socket_, send_buf, send_size, kNoFlags);
+        // if (res == -1)
+        // {
+        //     perror("send failed!");
 
-            close(socket_);
-            _exit(1);
-        }
-        else
-        {
-            clog << res << " bytes sent... " << endl;
-            clog << " (echoed) " << send_buf << endl;
-        }
+        //     close(socket_);
+        //     _exit(1);
+        // }
+        // else
+        // {
+        //     clog << res << " bytes sent... " << endl;
+        //     clog << " (echoed) " << send_buf << endl;
+        // }
     }
 
 }
+
+
 
 int main()
 {

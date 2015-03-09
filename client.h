@@ -16,8 +16,8 @@ class IrcClient{
     static const unsigned int kNoFlags = 0;
 
 
-    void FormMessage(const char *in_buf, char *out_buf);
-    void FormPongResponse(const char *recv_buf, char *send_buf);
+    bool AutomaticlyHandledMsg(const char *in_buf);
+    void SendPONG(const char *recv_buf);
     void SendOrDie(const std::string &send_str, bool verbose=false);
 
  public:
