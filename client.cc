@@ -11,48 +11,7 @@
 #include "client.h"
 
 
-IrcClient::IrcClient()
-{
-    logger_ = new Logger();
-}
-
-IrcClient::~IrcClient()
-{
-    delete logger_;
-}
-
-
-void IrcClient::Connect(const std::string server_ip, const unsigned int server_port)
-{
-    int res = 0;
-    struct sockaddr_in addr;
-
-    socket_ = socket(AF_INET, SOCK_STREAM, kNoFlags);
-    if (socket_ == -1)
-    {
-        perror("Can't create socket!");
-        _exit(1);
-    }
-
-    addr.sin_family = AF_INET;
-    addr.sin_port = htons(server_port);
-    res = inet_aton(server_ip.c_str(), &addr.sin_addr);
-    if (res != 1)
-    {
-        perror("inet_pton error!");
-        close(socket_);
-        _exit(1);
-    }
-
-    res = connect(socket_, (struct sockaddr *)&addr, sizeof(addr));
-    if (res == -1)
-    {
-        perror("connect error!");
-        close(socket_);
-        _exit(1);
-    }
-    logger_->Log("Successfully connected.\n");
-}
+/************************** PRIVATE  **************************/
 
 // TODO: Try to do static SendPONG? what approach is better?
 
@@ -131,6 +90,52 @@ void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
     {
         cout << send_str << " successfully sent" << std::endl;
     }
+}
+
+
+/************************** PUBLIC **************************/
+
+IrcClient::IrcClient()
+{
+    logger_ = new Logger();
+}
+
+IrcClient::~IrcClient()
+{
+    delete logger_;
+}
+
+
+void IrcClient::Connect(const std::string server_ip, const unsigned int server_port)
+{
+    int res = 0;
+    struct sockaddr_in addr;
+
+    socket_ = socket(AF_INET, SOCK_STREAM, kNoFlags);
+    if (socket_ == -1)
+    {
+        perror("Can't create socket!");
+        _exit(1);
+    }
+
+    addr.sin_family = AF_INET;
+    addr.sin_port = htons(server_port);
+    res = inet_aton(server_ip.c_str(), &addr.sin_addr);
+    if (res != 1)
+    {
+        perror("inet_pton error!");
+        close(socket_);
+        _exit(1);
+    }
+
+    res = connect(socket_, (struct sockaddr *)&addr, sizeof(addr));
+    if (res == -1)
+    {
+        perror("connect error!");
+        close(socket_);
+        _exit(1);
+    }
+    logger_->Log("Successfully connected.\n");
 }
 
 
