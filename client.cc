@@ -19,8 +19,7 @@ void IrcClient::SendPONG(const char *recv_buf)
 {
     if (recv_buf == NULL)
         return ;
-
-    clog << "Ready to send PONG" << endl;
+    clog << "[D] got PING: " << endl << recv_buf << endl;
     const std::string kPongString = std::string("PONG");
 
     std::string received_str = std::string(recv_buf);
@@ -46,7 +45,7 @@ static bool IfPingRequest(const char *recv_buf)
     if (recv_buf == NULL)
         return false;
 
-    const std::string kPingString = std::string("PING");
+    const std::string kPingString = std::string("PING :");
 
     std::string received_str = std::string(recv_buf);
     if (received_str.find(kPingString) == std::string::npos)
@@ -62,7 +61,7 @@ static bool IfPingRequest(const char *recv_buf)
  */
 bool IrcClient::AutomaticlyHandledMsg(const char *recv_buf)
 {
-    clog << "[D] got: " << endl << recv_buf << endl;
+
     if (IfPingRequest(recv_buf))
     {
         SendPONG(recv_buf);
