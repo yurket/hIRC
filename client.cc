@@ -1,5 +1,3 @@
-#include "client.h"
-
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,6 +7,8 @@
 #include <sys/socket.h>
 #include <poll.h>
 #include <unistd.h>
+
+#include "client.h"
 
 
 IrcClient::IrcClient()
@@ -242,7 +242,7 @@ void IrcClient::Communicate()
 int main()
 {
     IrcClient client = IrcClient();
-    XmlConfig config = XmlConfig("freenode.xml");
+    XmlConfig config = XmlConfig("bynets.xml");
     config.print_config();
     cout << std::endl << std::endl;
 
