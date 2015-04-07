@@ -65,7 +65,7 @@ static bool IfPingRequest(const char *recv_buf)
   returns *TRUE*, if message was automatically handled and
   *FALSE* otherwise.
  */
-bool IrcClient::AutomaticlyHandledMsg(const char *recv_buf)
+bool IrcClient::AutomaticallyHandledMsg(const char *recv_buf)
 {
 
     if (IfPingRequest(recv_buf))
@@ -235,8 +235,8 @@ void IrcClient::Communicate()
             _exit(1);
         }
 
-	logger_->Log(recv_buf);
-        if (AutomaticlyHandledMsg(recv_buf))
+        logger_->Log(recv_buf);
+        if (AutomaticallyHandledMsg(recv_buf))
             continue;
 
         // send_size = strlen(send_buf);
