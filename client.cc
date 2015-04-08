@@ -251,10 +251,11 @@ void IrcClient::Communicate()
         if (AutomaticallyHandledMsg(recv_buf))
             continue;
 
+
         cin.getline(send_buf, kSendBufLen);
         if (!strcmp(send_buf, "join"))
         {
-            this->Join("lite5", "#testotest");
+            Join(config_->nick, config_->room);
             memset(send_buf, 0, kSendBufLen);
         }
         else{
@@ -263,20 +264,6 @@ void IrcClient::Communicate()
             memset(send_buf, 0, kSendBufLen);
         }
 
-        // send_size = strlen(send_buf);
-        // res = send(socket_, send_buf, send_size, kNoFlags);
-        // if (res == -1)
-        // {
-        //     perror("send failed!");
-
-        //     close(socket_);
-        //     _exit(1);
-        // }
-        // else
-        // {
-        //     clog << res << " bytes sent... " << endl;
-        //     clog << " (echoed) " << send_buf << endl;
-        // }
     }
 
 }
