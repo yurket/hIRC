@@ -27,6 +27,7 @@ class IrcClient{
     ~IrcClient();
     void Connect(const std::string server_ip="", const unsigned int server_port=6667);
     void Communicate();
+    void Join(const std::string nick, const std::string room_name);
     void Register(const std::string nick, const std::string real_name);
     void Disconnect();
 };

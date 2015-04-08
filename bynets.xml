@@ -4,4 +4,5 @@
   <server_ip>86.57.151.5</server_ip>
   <server_port>6667</server_port>
   <server_name>irc.bynets.org</server_name>
+  <room>#testotest</room>
 </config>

@@ -37,7 +37,7 @@ void IrcClient::SendPONG(const char *recv_buf)
         std::string msg = received_str.substr(pos);
         pong_msg += msg;
         std::clog << "[D] Sending PONG msg: " << pong_msg << std::endl;
-        SendOrDie(pong_msg);
+        SendOrDie(pong_msg, true);
     }
     else
     {
@@ -93,7 +93,7 @@ void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
     }
     else if(verbose)
     {
-        cout << send_str << " successfully sent" << std::endl;
+        cout << "SendOrDie(): '" << send_str << "' successfully sent" << std::endl;
     }
 }
 
@@ -197,6 +197,18 @@ void IrcClient::Register(const std::string nick, const std::string real_name)
     logger_->Log("Successfully registered with name " + nick + '\n');
 }
 
+void IrcClient::Join(const std::string nick, const std::string room_name)
+{
+    // To join string like this: ":lite5 JOIN #test_room_name" should be sent
+    std::string send_str;
+    bool verbose = true;
+
+    send_str = ":" + nick + " JOIN " + room_name;
+    SendOrDie(send_str, verbose);
+
+    logger_->Log("[+] Successfully joined to " + room_name);
+}
+
 void IrcClient::Communicate()
 {
     char recv_buf[kRecvBufLen];
@@ -239,6 +251,18 @@ void IrcClient::Communicate()
         if (AutomaticallyHandledMsg(recv_buf))
             continue;
 
+        cin.getline(send_buf, kSendBufLen);
+        if (!strcmp(send_buf, "join"))
+        {
+            this->Join("lite5", "#testotest");
+            memset(send_buf, 0, kSendBufLen);
+        }
+        else{
+            strcat(send_buf, "\r\n");
+            SendOrDie(send_buf, true);
+            memset(send_buf, 0, kSendBufLen);
+        }
+
         // send_size = strlen(send_buf);
         // res = send(socket_, send_buf, send_size, kNoFlags);
         // if (res == -1)
@@ -269,5 +293,6 @@ int main()
     client.Connect(config.server_ip, config.server_port);
     client.Register(config.nick, config.real_name);
     client.Communicate();
+
     return 0;
 }

@@ -20,6 +20,7 @@ public:
     string server_ip;
     unsigned short int server_port;
     string server_name;
+    string room;
  
     XmlConfig(string filename);
 
@@ -45,6 +46,7 @@ void XmlConfig::load(const string &filename)
     server_ip = pt.get<string>("config.server_ip");
     server_port = pt.get<unsigned short int>("config.server_port");
     server_name = pt.get<string>("config.server_name");
+    room = pt.get<string>("config.room");
 }
 
 void XmlConfig::print_config()

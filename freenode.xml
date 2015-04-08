@@ -4,4 +4,5 @@
   <server_ip>174.143.119.91</server_ip>
   <server_port>6667</server_port>
   <server_name>irc.freenode.net</server_name>
+  <room>#testotest</room>
 </config>
