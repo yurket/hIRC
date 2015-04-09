@@ -199,6 +199,9 @@ void IrcClient::Register(const std::string nick, const std::string real_name)
 
 void IrcClient::Join(const std::string nick, const std::string room_name)
 {
+    // TODO: observe the state of connections to the rooms. With structure
+    // like this: {'room': is_connected}
+
     // To join string like this: ":lite5 JOIN #test_room_name" should be sent
     std::string send_str;
     bool verbose = true;
@@ -222,10 +225,12 @@ void IrcClient::Communicate()
 
     // timeout in msecs
     const unsigned int timeout = 1000;
-
+    unsigned int no_new_info_counter = 0;
+    bool client_joined = false;
     while(1){
         poll_res = poll(fds, 1, timeout);
         if (poll_res > 0){
+            no_new_info_counter = 0;
             memset(recv_buf, 0, sizeof(recv_buf));
             // reduce receive length by 1 to have null-terminated string
             res = recv(socket_, recv_buf, sizeof(recv_buf)-1, kNoFlags);
@@ -239,6 +244,15 @@ void IrcClient::Communicate()
             cout << "received: " << endl;
             cout << recv_buf << endl;
         }
+        else if (poll_res == 0)
+        {
+            no_new_info_counter++;
+            if (no_new_info_counter >= 3 && !client_joined)
+            {
+                Join(config_->nick, config_->room);
+                client_joined = true;
+            }
+        }
         else if (poll_res == -1)
         {
             perror("poll failed!");
@@ -251,18 +265,18 @@ void IrcClient::Communicate()
         if (AutomaticallyHandledMsg(recv_buf))
             continue;
 
-
-        cin.getline(send_buf, kSendBufLen);
-        if (!strcmp(send_buf, "join"))
-        {
-            Join(config_->nick, config_->room);
-            memset(send_buf, 0, kSendBufLen);
-        }
-        else{
-            strcat(send_buf, "\r\n");
-            SendOrDie(send_buf, true);
-            memset(send_buf, 0, kSendBufLen);
-        }
+        /* Debug code */
+        // cin.getline(send_buf, kSendBufLen);
+        // if (!strcmp(send_buf, "join"))
+        // {
+        //     Join(config_->nick, config_->room);
+        //     memset(send_buf, 0, kSendBufLen);
+        // }
+        // else{
+        //     strcat(send_buf, "\r\n");
+        //     SendOrDie(send_buf, true);
+        //     memset(send_buf, 0, kSendBufLen);
+        // }
 
     }
 
