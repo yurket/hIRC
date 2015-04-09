@@ -8,17 +8,19 @@ class Logger
 {
     std::ofstream file_;
  public:
-    Logger(const std::string &filename);
+    Logger(
+        const std::string &filename,
+        const std::fstream::openmode mode = std::fstream::out
+        );
     ~Logger();
     void PrintHeader();
     void Log(const std::string &s);
 };
 
 
-
-Logger::Logger(const std::string &filename="test.log")
+Logger::Logger(const std::string &filename="test.log", const std::fstream::openmode mode)
 {
-    file_.open(filename.c_str(), std::ofstream::out | std::ofstream::app);
+    file_.open(filename.c_str(), mode);
 }
 
 Logger::~Logger()
