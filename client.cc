@@ -203,7 +203,7 @@ void IrcClient::Join(const std::string nick, const std::string room_name)
     std::string send_str;
     bool verbose = true;
 
-    send_str = ":" + nick + " JOIN " + room_name;
+    send_str = ":" + nick + " JOIN " + room_name + "\r\n";
     SendOrDie(send_str, verbose);
 
     logger_->Log("[+] Successfully joined to " + room_name);
