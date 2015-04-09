@@ -228,10 +228,12 @@ void IrcClient::Communicate()
     unsigned int no_new_info_counter = 0;
     bool client_joined = false;
     while(1){
+        memset(recv_buf, 0, sizeof(recv_buf));
         poll_res = poll(fds, 1, timeout);
+
         if (poll_res > 0){
             no_new_info_counter = 0;
-            memset(recv_buf, 0, sizeof(recv_buf));
+
             // reduce receive length by 1 to have null-terminated string
             res = recv(socket_, recv_buf, sizeof(recv_buf)-1, kNoFlags);
             if (res == -1)
