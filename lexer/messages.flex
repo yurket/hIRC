@@ -1,21 +1,26 @@
-
-
-
 /*message    (:{prefix}{SPACE})?({command}{params}{crlf})
 
-
-
-*/
 message  (:{prefix}{SPACE})?{command}{params}{crlf}
 
 prefix     {nick}?(!{user})?('@'{host})?
-command    {letter}+|{number}{3}
+
 params     {SPACE}[(":"{trailing})|({middle}{params})]*
 middle     [^:][^\x20\x0\r\n]*
+*/
+
+
+
+message    (:{prefix}{SPACE})?{command}{SPACE}{channel}?{SPACE}?{trailing}{crlf}
+prefix     {nick}!.*
+command    {letter}+|({number}{3})
 trailing   [^\x0\r\n]*
 
 
+
 nick       {letter}({letter}|{number}|{special})+
+channel    (#|&){chstring}
+chstring   [^\t\r\n\7\0]+
+
 /******* simple ********/
 SPACE      (" ")+
 letter     [a-zA-Z]
@@ -25,11 +30,7 @@ crlf       "\r\n"
 
 %%
 
-{message}   printf("<msg %s>", yytext);
-{prefix}    printf("<prefix %s>", yytext);
-{command}   printf("<command %s>", yytext);
-{params}    printf("<params %s>", yytext);
-{middle}    printf("<mid %s>", yytext);
+{message}   printf("<message %s>", yytext);
 {trailing}  printf("<trail %s>", yytext);
 {crlf}      printf("<crlf>\n");
 
