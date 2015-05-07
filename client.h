@@ -16,6 +16,9 @@ class IrcClient{
     static const unsigned int kSendBufLen = 512;
     static const unsigned int kNoFlags = 0;
 
+    // forbid CC
+    IrcClient(const IrcClient&);
+    IrcClient& operator=(const IrcClient&);
 
     bool AutomaticallyHandledMsg(const char *in_buf);
     void SendPONG(const char *recv_buf);

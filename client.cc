@@ -288,8 +288,8 @@ void IrcClient::Communicate()
 
 int main()
 {
-    XmlConfig config = XmlConfig("bynets.xml");
-    IrcClient client = IrcClient(config);
+    IrcClient client;
+    XmlConfig config("bynets.xml");
     config.print_config();
     cout << std::endl << std::endl;
 
