@@ -22,15 +22,21 @@ public:
     string server_name;
     string room;
  
-    XmlConfig(string filename);
+    XmlConfig(const string &filename);
 
+private:
+    // forbid CCs
+    XmlConfig(const XmlConfig &);
+    XmlConfig & operator= (const XmlConfig &);
+
+public:
     void load();
     void load(const string &filename);
     void print_config();
 
 };
 
-XmlConfig::XmlConfig(string filename)
+XmlConfig::XmlConfig(const string &filename)
     : m_filename(filename)
 {
     load(filename);
