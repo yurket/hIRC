@@ -101,16 +101,16 @@ void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
 /************************** PUBLIC **************************/
 
 IrcClient::IrcClient()
+    : logger_(new Logger())
+    , config_(NULL)
 {
-    logger_ = new Logger();
-    config_ = NULL;
 }
 
-IrcClient::IrcClient(XmlConfig &config)
+IrcClient::IrcClient(const string &config_filename)
+    : logger_(new Logger())
+    , config_(new XmlConfig(config_filename))
+
 {
-    logger_ = new Logger();
-    // Copy Constructor
-    config_ = new XmlConfig(config);
 }
 
 

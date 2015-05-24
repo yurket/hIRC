@@ -26,7 +26,7 @@ class IrcClient{
 
  public:
     IrcClient();
-    IrcClient(XmlConfig &conf);
+    IrcClient(const string &config_name);
     ~IrcClient();
     void Connect(const std::string server_ip="", const unsigned int server_port=6667);
     void Communicate();
