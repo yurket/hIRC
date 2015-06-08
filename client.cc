@@ -82,7 +82,7 @@ bool IrcClient::AutomaticallyHandledMsg(const char *recv_buf)
  */
 void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
 {
-    unsigned int res = 0;
+    int res = 0;
     res = send(socket_, send_str.c_str(), send_str.length(), kNoFlags);
     if (res == -1)
     {
