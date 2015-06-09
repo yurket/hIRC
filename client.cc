@@ -263,9 +263,10 @@ void IrcClient::Communicate()
             _exit(1);
         }
 
-        logger_->Log(recv_buf);
         if (AutomaticallyHandledMsg(recv_buf))
             continue;
+
+        logger_->Log(recv_buf);
 
         /* Debug code */
         // cin.getline(send_buf, kSendBufLen);
@@ -288,8 +289,8 @@ void IrcClient::Communicate()
 
 int main()
 {
-    IrcClient client;
     XmlConfig config("bynets.xml");
+    IrcClient client("bynets.xml");
     config.print_config();
     cout << std::endl << std::endl;
 
