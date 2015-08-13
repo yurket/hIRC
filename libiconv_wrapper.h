@@ -1,6 +1,9 @@
-#include <iconv.h>
+#ifndef LIBICONV_WRAPPER_H
+#define LIBICONV_WRAPPER_H
 
 #include <string>
+
+#include <iconv.h>
 
 
 class LibiconvWrapper
@@ -9,13 +12,22 @@ public:
     explicit LibiconvWrapper();
     LibiconvWrapper(const std::string tocode, const std::string fromcode);
     ~LibiconvWrapper();
-    
-    size_t ConvertCP(iconv_t cd,
-              const char** inbuf, size_t * inbytesleft,
-              char** outbuf, size_t * outbytesleft);
+
+
+    LibiconvWrapper(const LibiconvWrapper &) = delete;
+    LibiconvWrapper & operator = (const LibiconvWrapper &) = delete;
+
+
+    void ConvertBuffer(char* inbuf, size_t inbuf_size,
+                       char* outbuf, size_t outbuf_size);
 
 private:
-    iconv_t *conversion_descriptor_;
+    void ResetConversionDescriptor();
+
+private:
+    iconv_t conversion_descriptor_;
     bool initialized_;
 };
+
+#endif // LIBICONV_WRAPPER_H
 
