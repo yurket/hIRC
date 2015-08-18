@@ -10,16 +10,15 @@ class LibiconvWrapper
 {
 public:
     explicit LibiconvWrapper();
-    LibiconvWrapper(const std::string tocode, const std::string fromcode);
+    LibiconvWrapper(const std::string& fromcode, const std::string& tocode);
     ~LibiconvWrapper();
 
 
     LibiconvWrapper(const LibiconvWrapper &) = delete;
     LibiconvWrapper & operator = (const LibiconvWrapper &) = delete;
 
-
-    void ConvertBuffer(char* inbuf, size_t inbuf_size,
-                       char* outbuf, size_t outbuf_size);
+    void ConvertBuffer(char* inbuf, const size_t inbuf_size,
+                         char* outbuf, const size_t outbuf_size);
 
 private:
     void ResetConversionDescriptor();

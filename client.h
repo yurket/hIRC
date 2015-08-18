@@ -16,6 +16,9 @@ class IrcClient{
     static const unsigned int kSendBufLen = 512;
     static const unsigned int kNoFlags = 0;
 
+    // utf-8 units can occupy 1-6 bytes
+    static const unsigned int kIconvBufLen = kRecvBufLen * 6;
+
     // forbid CC
     IrcClient(const IrcClient&);
     IrcClient& operator=(const IrcClient&);

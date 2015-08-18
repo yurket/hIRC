@@ -1,14 +1,18 @@
-#include <errno.h>
-#include <stdio.h>
-#include <string.h>
+#include "client.h"
 
 #include <arpa/inet.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <poll.h>
 #include <unistd.h>
 
-#include "client.h"
+#include <cstdio>
+#include <cstring>
+
+#include "libiconv_wrapper.h"
+
+
 
 
 /************************** PRIVATE  **************************/
@@ -214,8 +218,9 @@ void IrcClient::Join(const std::string nick, const std::string room_name)
 
 void IrcClient::Communicate()
 {
-    char recv_buf[kRecvBufLen];
-    char send_buf[kSendBufLen];
+    char recv_buf[kRecvBufLen] = { 0 };
+    char iconv_buf[kIconvBufLen] = { 0 };
+    char send_buf[kSendBufLen] = { 0 };
     int res = 0, poll_res = 0;
     unsigned int send_size = 0;
     struct pollfd fds[1];
@@ -227,6 +232,9 @@ void IrcClient::Communicate()
     const unsigned int timeout = 1000;
     unsigned int no_new_info_counter = 0;
     bool client_joined = false;
+
+    // TODO: setting in .xml file
+    LibiconvWrapper converter("CP1251", "UTF-8");
     while(1){
         memset(recv_buf, 0, sizeof(recv_buf));
         poll_res = poll(fds, 1, timeout);
@@ -243,8 +251,11 @@ void IrcClient::Communicate()
                 close(socket_);
                 _exit(1);
             }
+            converter.ConvertBuffer(recv_buf, kRecvBufLen, iconv_buf, kRecvBufLen);
             cout << "received: " << endl;
-            cout << recv_buf << endl;
+            cout << iconv_buf << endl;
+            logger_->Log(iconv_buf);
+
         }
         else if (poll_res == 0)
         {
@@ -266,7 +277,6 @@ void IrcClient::Communicate()
         if (AutomaticallyHandledMsg(recv_buf))
             continue;
 
-        logger_->Log(recv_buf);
 
         /* Debug code */
         // cin.getline(send_buf, kSendBufLen);
