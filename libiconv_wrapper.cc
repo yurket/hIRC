@@ -72,6 +72,8 @@ void LibiconvWrapper::ConvertBuffer(char* inbuf, const size_t inbuf_size,
 }
 
 
+// TODO: add simple tests for some encoding coverstations?
+
 // int main()
 // {
 //     LibiconvWrapper converter("UTF-8", "CP1251");

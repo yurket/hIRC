@@ -233,8 +233,7 @@ void IrcClient::Communicate()
     unsigned int no_new_info_counter = 0;
     bool client_joined = false;
 
-    // TODO: setting in .xml file
-    LibiconvWrapper converter("CP1251", "UTF-8");
+    LibiconvWrapper converter(config_->encoding, "UTF-8");
     while(1){
         memset(recv_buf, 0, sizeof(recv_buf));
         memset(iconv_buf, 0, sizeof(iconv_buf));
