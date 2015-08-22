@@ -26,7 +26,7 @@ LibiconvWrapper::~LibiconvWrapper()
 {
     if (iconv_close(conversion_descriptor_) == -1)
     {
-
+        perror("iconv_close");
         throw std::exception();
     }
 }
@@ -57,6 +57,7 @@ void LibiconvWrapper::ConvertBuffer(char* inbuf, const size_t inbuf_size,
     if (res == (size_t)-1)
     {
         perror("iconv");
+        std::cerr << "inbuf_size: " << inbuf_size_ << ", outbuf_size: " << outbuf_size_ << std::endl;
         throw std::exception();
     }
 

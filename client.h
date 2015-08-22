@@ -17,7 +17,7 @@ class IrcClient{
     static const unsigned int kNoFlags = 0;
 
     // utf-8 units can occupy 1-6 bytes
-    static const unsigned int kIconvBufLen = kRecvBufLen * 6;
+    static constexpr unsigned int kIconvBufLen = kRecvBufLen * 6;
 
     // forbid CC
     IrcClient(const IrcClient&);
@@ -29,7 +29,7 @@ class IrcClient{
 
  public:
     IrcClient();
-    IrcClient(const string &config_name);
+    IrcClient(const std::string &config_name);
     ~IrcClient();
     void Connect(const std::string server_ip="", const unsigned int server_port=6667);
     void Communicate();

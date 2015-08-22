@@ -23,7 +23,7 @@ void IrcClient::SendPONG(const char *recv_buf)
 {
     if (recv_buf == NULL)
         return ;
-    clog << "[D] got PING: " << endl << recv_buf << endl;
+    std::cerr << "[D] got PING: " << std::endl << recv_buf << std::endl;
     const std::string kPongString = std::string("PONG");
 
     std::string received_str = std::string(recv_buf);
@@ -35,12 +35,12 @@ void IrcClient::SendPONG(const char *recv_buf)
 
     // TODO: sprintf?
     std::string pong_msg = kPongString + " " + nick + " ";
-    if (pos != string::npos)
+    if (pos != std::string::npos)
     {
         // msg is smth like ":77E488E" for bynets server
         std::string msg = received_str.substr(pos);
         pong_msg += msg;
-        std::clog << "[D] Sending PONG msg: " << pong_msg << std::endl;
+        std::cerr << "[D] Sending PONG msg: " << pong_msg << std::endl;
         SendOrDie(pong_msg, true);
     }
     else
@@ -97,7 +97,7 @@ void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
     }
     else if(verbose)
     {
-        cout << "SendOrDie(): '" << send_str << "' successfully sent" << std::endl;
+        std::cerr << "SendOrDie(): '" << send_str << "' successfully sent" << std::endl;
     }
 }
 
@@ -110,7 +110,7 @@ IrcClient::IrcClient()
 {
 }
 
-IrcClient::IrcClient(const string &config_filename)
+IrcClient::IrcClient(const std::string &config_filename)
     : logger_(new Logger())
     , config_(new XmlConfig(config_filename))
 
@@ -237,6 +237,7 @@ void IrcClient::Communicate()
     LibiconvWrapper converter("CP1251", "UTF-8");
     while(1){
         memset(recv_buf, 0, sizeof(recv_buf));
+        memset(iconv_buf, 0, sizeof(iconv_buf));
         poll_res = poll(fds, 1, timeout);
 
         if (poll_res > 0){
@@ -251,9 +252,10 @@ void IrcClient::Communicate()
                 close(socket_);
                 _exit(1);
             }
-            converter.ConvertBuffer(recv_buf, kRecvBufLen, iconv_buf, kRecvBufLen);
-            cout << "received: " << endl;
-            cout << iconv_buf << endl;
+            converter.ConvertBuffer(recv_buf, kRecvBufLen, iconv_buf, kIconvBufLen);
+
+            std::cerr << "received: " << std::endl;
+            std::cerr << iconv_buf << std::endl;
             logger_->Log(iconv_buf);
 
         }
@@ -302,7 +304,7 @@ int main()
     XmlConfig config("bynets.xml");
     IrcClient client("bynets.xml");
     config.print_config();
-    cout << std::endl << std::endl;
+    std::cerr << std::endl << std::endl;
 
     client.Connect(config.server_ip, config.server_port);
     client.Register(config.nick, config.real_name);
