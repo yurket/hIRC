@@ -2,36 +2,58 @@
 #define LOGGER_H_
 
 #include <ctime>
+#include <stdexcept>
 #include <fstream>
 
 
 class Logger
 {
-    std::ofstream file_;
  public:
-    Logger(
+    Logger();
+    explicit Logger(
         const std::string &filename,
         const std::fstream::openmode mode = std::fstream::out
         );
     ~Logger();
     void Log(const std::string &s);
     void PrintHeader();
+
+    // TODO:  note: ‘Logger::Logger(const Logger&)’ is implicitly deleted
+    // because the default definition would be ill-formed
+    Logger(const Logger&);
+
+private:
+    std::ofstream file_;
+    bool initialized_;
 };
 
 
-Logger::Logger(const std::string &filename="test.log", const std::fstream::openmode mode)
+Logger::Logger()
+    : initialized_(false)
+{
+}
+
+Logger::Logger(const std::string &filename, const std::fstream::openmode mode)
 {
     file_.open(filename.c_str(), mode);
+    initialized_ = true;
     PrintHeader();
 }
 
 Logger::~Logger()
 {
-    file_.close();
+    if (file_.is_open())
+    {
+        file_.close();
+    }
 }
 
 void Logger::Log(const std::string &s)
 {
+    if (!initialized_)
+    {
+        throw std::logic_error("Logger: not initialized!");
+    }
     file_ << s;
     file_.flush();
 }

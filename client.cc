@@ -30,8 +30,7 @@ void IrcClient::SendPONG(const char *recv_buf)
     size_t pos = received_str.find(":");
 
     std::string nick = std::string("test_nick123");
-    if (config_ != NULL)
-        nick = config_->nick;
+    nick = config_.nick();
 
     // TODO: sprintf?
     std::string pong_msg = kPongString + " " + nick + " ";
@@ -105,23 +104,15 @@ void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
 /************************** PUBLIC **************************/
 
 IrcClient::IrcClient()
-    : logger_(new Logger())
-    , config_(NULL)
+    : logger_(Logger())
+    , config_(XmlConfig())
 {
 }
 
 IrcClient::IrcClient(const std::string &config_filename)
-    : logger_(new Logger())
-    , config_(new XmlConfig(config_filename))
-
+    : logger_(Logger("test.log"))
+    , config_(XmlConfig(config_filename))
 {
-}
-
-
-IrcClient::~IrcClient()
-{
-    delete logger_;
-    delete config_;
 }
 
 
@@ -154,7 +145,7 @@ void IrcClient::Connect(const std::string server_ip, const unsigned int server_p
         close(socket_);
         _exit(1);
     }
-    logger_->Log("Successfully connected.\n");
+    logger_.Log("Successfully connected.\n");
 }
 
 
@@ -198,7 +189,7 @@ void IrcClient::Register(const std::string nick, const std::string real_name)
     send_str = "USER " + nick + " 0 * :" + real_name + "\r\n";
     SendOrDie(send_str, verbose);
 
-    logger_->Log("Successfully registered with name " + nick + '\n');
+    logger_.Log("Successfully registered with name " + nick + '\n');
 }
 
 void IrcClient::Join(const std::string nick, const std::string room_name)
@@ -213,7 +204,7 @@ void IrcClient::Join(const std::string nick, const std::string room_name)
     send_str = ":" + nick + " JOIN " + room_name + "\r\n";
     SendOrDie(send_str, verbose);
 
-    logger_->Log("[+] Successfully joined to " + room_name);
+    logger_.Log("[+] Successfully joined to " + room_name);
 }
 
 void IrcClient::Communicate()
@@ -233,7 +224,7 @@ void IrcClient::Communicate()
     unsigned int no_new_info_counter = 0;
     bool client_joined = false;
 
-    LibiconvWrapper converter(config_->encoding, "UTF-8");
+    LibiconvWrapper converter(config_.encoding(), "UTF-8");
     while(1){
         memset(recv_buf, 0, sizeof(recv_buf));
         memset(iconv_buf, 0, sizeof(iconv_buf));
@@ -255,7 +246,7 @@ void IrcClient::Communicate()
 
             std::cerr << "received: " << std::endl;
             std::cerr << iconv_buf << std::endl;
-            logger_->Log(iconv_buf);
+            logger_.Log(iconv_buf);
 
         }
         else if (poll_res == 0)
@@ -263,7 +254,7 @@ void IrcClient::Communicate()
             no_new_info_counter++;
             if (no_new_info_counter >= 3 && !client_joined)
             {
-                Join(config_->nick, config_->room);
+                Join(config_.nick(), config_.room());
                 client_joined = true;
             }
         }
@@ -283,7 +274,7 @@ void IrcClient::Communicate()
         // cin.getline(send_buf, kSendBufLen);
         // if (!strcmp(send_buf, "join"))
         // {
-        //     Join(config_->nick, config_->room);
+        //     Join(config_.nick(), config_.room());
         //     memset(send_buf, 0, kSendBufLen);
         // }
         // else{
@@ -305,8 +296,8 @@ int main()
     config.print_config();
     std::cerr << std::endl << std::endl;
 
-    client.Connect(config.server_ip, config.server_port);
-    client.Register(config.nick, config.real_name);
+    client.Connect(config.server_ip(), config.server_port());
+    client.Register(config.nick(), config.real_name());
     client.Communicate();
 
     return 0;

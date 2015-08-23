@@ -9,9 +9,9 @@ class IrcClient{
   // TODO: relocate class definition accordingly to Declaration Order section
   // of https://google-styleguide.googlecode.com/svn/trunk/cppguide.html
  private:
-    Logger *logger_;
+    Logger logger_;
     int socket_;
-    XmlConfig *config_;
+    XmlConfig config_;
     static const unsigned int kRecvBufLen = 1024;
     static const unsigned int kSendBufLen = 512;
     static const unsigned int kNoFlags = 0;
@@ -30,8 +30,7 @@ class IrcClient{
  public:
     IrcClient();
     IrcClient(const std::string &config_name);
-    ~IrcClient();
-    void Connect(const std::string server_ip="", const unsigned int server_port=6667);
+    void Connect(const std::string server_ip, const unsigned int server_port=6667);
     void Communicate();
     void Join(const std::string nick, const std::string room_name);
     void Register(const std::string nick, const std::string real_name);
