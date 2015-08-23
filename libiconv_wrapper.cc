@@ -27,7 +27,6 @@ LibiconvWrapper::~LibiconvWrapper()
     if (iconv_close(conversion_descriptor_) == -1)
     {
         perror("iconv_close");
-        throw std::exception();
     }
 }
 

@@ -28,7 +28,7 @@ IrcClient::IrcClient(const std::string &config_filename)
 }
 
 
-void IrcClient::Connect(const std::string server_ip, const unsigned int server_port)
+void IrcClient::Connect(const std::string &server_ip, const unsigned int server_port)
 {
     int res = 0;
     struct sockaddr_in addr;
@@ -84,7 +84,7 @@ void IrcClient::Connect(const std::string server_ip, const unsigned int server_p
    The reply message MUST contain the full client identifier upon which
    it was registered.
  */
-void IrcClient::Register(const std::string nick, const std::string real_name)
+void IrcClient::Register(const std::string &nick, const std::string &real_name)
 {
     std::string send_str;
     bool verbose=true;
@@ -104,7 +104,7 @@ void IrcClient::Register(const std::string nick, const std::string real_name)
     logger_.Log("Successfully registered with name " + nick + '\n');
 }
 
-void IrcClient::Join(const std::string nick, const std::string room_name)
+void IrcClient::Join(const std::string &nick, const std::string &room_name)
 {
     // TODO: observe the state of connections to the rooms. With structure
     // like this: {'room': is_connected}
@@ -212,11 +212,8 @@ void IrcClient::SendPONG(const char *recv_buf)
     std::string received_str = std::string(recv_buf);
     size_t pos = received_str.find(":");
 
-    std::string nick = std::string("test_nick123");
-    nick = config_.nick();
-
     // TODO: sprintf?
-    std::string pong_msg = kPongString + " " + nick + " ";
+    std::string pong_msg = kPongString + " " + config_.nick() + " ";
     if (pos != std::string::npos)
     {
         // msg is smth like ":77E488E" for bynets server
