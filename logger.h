@@ -15,12 +15,12 @@ class Logger
         const std::fstream::openmode mode = std::fstream::out
         );
     ~Logger();
-    void Log(const std::string &s);
-    void PrintHeader();
-
     // TODO:  note: ‘Logger::Logger(const Logger&)’ is implicitly deleted
     // because the default definition would be ill-formed
     Logger(const Logger&);
+
+    void Log(const std::string &s);
+    void PrintHeader();
 
 private:
     std::ofstream file_;

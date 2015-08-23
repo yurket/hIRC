@@ -13,7 +13,6 @@ public:
     LibiconvWrapper(const std::string& fromcode, const std::string& tocode);
     ~LibiconvWrapper();
 
-
     LibiconvWrapper(const LibiconvWrapper &) = delete;
     LibiconvWrapper & operator = (const LibiconvWrapper &) = delete;
 
@@ -23,7 +22,6 @@ public:
 private:
     void ResetConversionDescriptor();
 
-private:
     iconv_t conversion_descriptor_;
     bool initialized_;
 };

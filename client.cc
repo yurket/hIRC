@@ -13,94 +13,6 @@
 #include "libiconv_wrapper.h"
 
 
-
-
-/************************** PRIVATE  **************************/
-
-// TODO: Try to do static SendPONG? what approach is better?
-
-void IrcClient::SendPONG(const char *recv_buf)
-{
-    if (recv_buf == NULL)
-        return ;
-    std::cerr << "[D] got PING: " << std::endl << recv_buf << std::endl;
-    const std::string kPongString = std::string("PONG");
-
-    std::string received_str = std::string(recv_buf);
-    size_t pos = received_str.find(":");
-
-    std::string nick = std::string("test_nick123");
-    nick = config_.nick();
-
-    // TODO: sprintf?
-    std::string pong_msg = kPongString + " " + nick + " ";
-    if (pos != std::string::npos)
-    {
-        // msg is smth like ":77E488E" for bynets server
-        std::string msg = received_str.substr(pos);
-        pong_msg += msg;
-        std::cerr << "[D] Sending PONG msg: " << pong_msg << std::endl;
-        SendOrDie(pong_msg, true);
-    }
-    else
-    {
-        perror("SendPONG() error!");
-        return;
-    }
-}
-
-static bool IfPingRequest(const char *recv_buf)
-{
-    if (recv_buf == NULL)
-        return false;
-
-    const std::string kPingString = std::string("PING :");
-
-    std::string received_str = std::string(recv_buf);
-    if (received_str.find(kPingString) == std::string::npos)
-        return false;
-    else
-        return true;
-}
-
-
-/*
-  returns *TRUE*, if message was automatically handled and
-  *FALSE* otherwise.
- */
-bool IrcClient::AutomaticallyHandledMsg(const char *recv_buf)
-{
-
-    if (IfPingRequest(recv_buf))
-    {
-        SendPONG(recv_buf);
-        return true;
-    }
-    return false;
-}
-
-
-/*
-  Send *buf* of length *len* using opened class member *socket_*.
- */
-void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
-{
-    int res = 0;
-    res = send(socket_, send_str.c_str(), send_str.length(), kNoFlags);
-    if (res == -1)
-    {
-        perror("send failed!");
-
-        close(socket_);
-        _exit(1);
-    }
-    else if(verbose)
-    {
-        std::cerr << "SendOrDie(): '" << send_str << "' successfully sent" << std::endl;
-    }
-}
-
-
 /************************** PUBLIC **************************/
 
 IrcClient::IrcClient()
@@ -284,7 +196,91 @@ void IrcClient::Communicate()
         // }
 
     }
+}
 
+/************************** PRIVATE  **************************/
+
+// TODO: Try to do static SendPONG? what approach is better?
+
+void IrcClient::SendPONG(const char *recv_buf)
+{
+    if (recv_buf == NULL)
+        return ;
+    std::cerr << "[D] got PING: " << std::endl << recv_buf << std::endl;
+    const std::string kPongString = std::string("PONG");
+
+    std::string received_str = std::string(recv_buf);
+    size_t pos = received_str.find(":");
+
+    std::string nick = std::string("test_nick123");
+    nick = config_.nick();
+
+    // TODO: sprintf?
+    std::string pong_msg = kPongString + " " + nick + " ";
+    if (pos != std::string::npos)
+    {
+        // msg is smth like ":77E488E" for bynets server
+        std::string msg = received_str.substr(pos);
+        pong_msg += msg;
+        std::cerr << "[D] Sending PONG msg: " << pong_msg << std::endl;
+        SendOrDie(pong_msg, true);
+    }
+    else
+    {
+        perror("SendPONG() error!");
+        return;
+    }
+}
+
+static bool IfPingRequest(const char *recv_buf)
+{
+    if (recv_buf == NULL)
+        return false;
+
+    const std::string kPingString = std::string("PING :");
+
+    std::string received_str = std::string(recv_buf);
+    if (received_str.find(kPingString) == std::string::npos)
+        return false;
+    else
+        return true;
+}
+
+
+/*
+  returns *TRUE*, if message was automatically handled and
+  *FALSE* otherwise.
+ */
+bool IrcClient::AutomaticallyHandledMsg(const char *recv_buf)
+{
+
+    if (IfPingRequest(recv_buf))
+    {
+        SendPONG(recv_buf);
+        return true;
+    }
+    return false;
+}
+
+
+/*
+  Send *buf* of length *len* using opened class member *socket_*.
+ */
+void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
+{
+    int res = 0;
+    res = send(socket_, send_str.c_str(), send_str.length(), kNoFlags);
+    if (res == -1)
+    {
+        perror("send failed!");
+
+        close(socket_);
+        _exit(1);
+    }
+    else if(verbose)
+    {
+        std::cerr << "SendOrDie(): '" << send_str << "' successfully sent" << std::endl;
+    }
 }
 
 
