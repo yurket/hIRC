@@ -16,7 +16,7 @@
 /************************** PUBLIC **************************/
 
 IrcClient::IrcClient()
-    : logger_(Logger())
+    : logger_(Logger("test.log"))
     , config_(XmlConfig())
 {
 }
@@ -50,7 +50,7 @@ void IrcClient::Connect(const std::string &server_ip, const unsigned int server_
         _exit(1);
     }
 
-    res = connect(socket_, (struct sockaddr *)&addr, sizeof(addr));
+    res = connect(socket_, (const struct sockaddr *)&addr, sizeof(addr));
     if (res == -1)
     {
         perror("connect error!");
@@ -104,7 +104,7 @@ void IrcClient::Register(const std::string &nick, const std::string &real_name)
     logger_.Log("Successfully registered with name " + nick + '\n');
 }
 
-void IrcClient::Join(const std::string &nick, const std::string &room_name)
+void IrcClient::JoinRoom(const std::string &nick, const std::string &room_name)
 {
     // TODO: observe the state of connections to the rooms. With structure
     // like this: {'room': is_connected}
@@ -166,7 +166,7 @@ void IrcClient::Communicate()
             no_new_info_counter++;
             if (no_new_info_counter >= 3 && !client_joined)
             {
-                Join(config_.nick(), config_.room());
+                JoinRoom(config_.nick(), config_.room());
                 client_joined = true;
             }
         }
@@ -181,12 +181,14 @@ void IrcClient::Communicate()
         if (AutomaticallyHandledMsg(recv_buf))
             continue;
 
+        logger_.Log("disconnect?");
+        client_joined = false;
 
         /* Debug code */
         // cin.getline(send_buf, kSendBufLen);
         // if (!strcmp(send_buf, "join"))
         // {
-        //     Join(config_.nick(), config_.room());
+        //     JoinRoom(config_.nick(), config_.room());
         //     memset(send_buf, 0, kSendBufLen);
         // }
         // else{
@@ -199,8 +201,6 @@ void IrcClient::Communicate()
 }
 
 /************************** PRIVATE  **************************/
-
-// TODO: Try to do static SendPONG? what approach is better?
 
 void IrcClient::SendPONG(const char *recv_buf)
 {

@@ -5,22 +5,22 @@
 #include "xml_config.h"
 
 
-class IrcClient{
+class IrcClient
+{
 public:
     IrcClient();
     IrcClient(const std::string &config_name);
 
-    void Connect(const std::string &server_ip, const unsigned int server_port=6667);
-    void Communicate();
-    void Join(const std::string &nick, const std::string &room_name);
     void Register(const std::string &nick, const std::string &real_name);
+    void Connect(const std::string &server_ip, const unsigned int server_port = 6667);
+    void JoinRoom(const std::string &nick, const std::string &room_name);
+    void Communicate();
     void Disconnect();
 
 private:
     static const unsigned int kRecvBufLen = 1024;
     static const unsigned int kSendBufLen = 512;
     static const unsigned int kNoFlags = 0;
-
     // utf-8 units can occupy 1-6 bytes
     static constexpr unsigned int kIconvBufLen = kRecvBufLen * 6;
 
