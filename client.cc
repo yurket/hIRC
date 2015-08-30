@@ -150,6 +150,7 @@ void IrcClient::Communicate()
             if (res == -1)
             {
                 perror("recv failed!");
+                logger_.Log("recv failed!");
 
                 close(socket_);
                 _exit(1);
@@ -173,6 +174,7 @@ void IrcClient::Communicate()
         else if (poll_res == -1)
         {
             perror("poll failed!");
+            logger_.Log("poll failed!");
 
             close(socket_);
             _exit(1);
@@ -181,8 +183,6 @@ void IrcClient::Communicate()
         if (AutomaticallyHandledMsg(recv_buf))
             continue;
 
-        logger_.Log("disconnect?");
-        client_joined = false;
 
         /* Debug code */
         // cin.getline(send_buf, kSendBufLen);
