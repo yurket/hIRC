@@ -155,6 +155,7 @@ void IrcClient::Communicate()
                 close(socket_);
                 _exit(1);
             }
+
             converter.ConvertBuffer(recv_buf, kRecvBufLen, iconv_buf, kIconvBufLen);
 
             std::cerr << "received: " << std::endl;
@@ -250,7 +251,6 @@ static bool IfPingRequest(const char *recv_buf)
  */
 bool IrcClient::AutomaticallyHandledMsg(const char *recv_buf)
 {
-
     if (IfPingRequest(recv_buf))
     {
         SendPONG(recv_buf);

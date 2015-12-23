@@ -23,7 +23,8 @@ private:
     void ResetConversionDescriptor();
 
     iconv_t conversion_descriptor_;
-    bool initialized_;
+    std::string fromcode_;
+    std::string tocode_;
 };
 
 #endif // LIBICONV_WRAPPER_H

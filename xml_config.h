@@ -44,7 +44,6 @@ XmlConfig::XmlConfig(const std::string &filename)
     : filename_(filename)
 {
     load(filename_);
-    initialized_ = true;
 }
 
 void XmlConfig::load(const std::string &filename)
@@ -57,8 +56,19 @@ void XmlConfig::load(const std::string &filename)
     server_ip_ = pt.get<std::string>("config.server_ip");
     server_port_ = pt.get<unsigned short int>("config.server_port");
     server_name_ = pt.get<std::string>("config.server_name");
-    encoding_ = pt.get<std::string>("config.encoding", "UTF-8");
     room_ = pt.get<std::string>("config.room");
+
+    try
+    {
+        encoding_ = pt.get<std::string>("config.encoding");
+    }
+    catch (boost::property_tree::ptree_bad_path const& e)
+    {
+        std::clog << "[W] settings default encoding to \"UTF-8\"" << std::endl;
+        encoding_ = "UTF-8";
+    }
+
+    initialized_ = true;
 }
 
 void XmlConfig::print_config() const

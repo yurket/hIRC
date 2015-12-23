@@ -6,20 +6,45 @@
 #include <iostream>
 
 
-LibiconvWrapper::LibiconvWrapper()
-    : initialized_(false)
+namespace
+{
+
+class LibiconvWrapperException : public std::exception
+{
+public:
+    LibiconvWrapperException(std::string const msg) :
+        msg_(msg)
+    {
+    }
+
+    const char* what() const throw()
+    {
+        return msg_.c_str();
+    }
+
+private:
+    std::string msg_;
+};
+
+} // namespace
+
+
+LibiconvWrapper::LibiconvWrapper() :
+    fromcode_(),
+    tocode_()
 {
 }
 
-LibiconvWrapper::LibiconvWrapper(const std::string& fromcode, const std::string& tocode)
+LibiconvWrapper::LibiconvWrapper(const std::string& fromcode, const std::string& tocode) :
+    fromcode_(fromcode),
+    tocode_(tocode)
 {
     conversion_descriptor_ = iconv_open(tocode.c_str(), fromcode.c_str());
     if (conversion_descriptor_ == (iconv_t)(-1))
     {
         perror("iconv_open");
-        throw std::exception();
+        throw LibiconvWrapperException("iconv_open error");
     }
-    initialized_ = true;
 }
 
 LibiconvWrapper::~LibiconvWrapper()
@@ -27,6 +52,7 @@ LibiconvWrapper::~LibiconvWrapper()
     if (iconv_close(conversion_descriptor_) == -1)
     {
         perror("iconv_close");
+        throw LibiconvWrapperException("iconv_close error");
     }
 }
 
@@ -37,7 +63,7 @@ void LibiconvWrapper::ResetConversionDescriptor()
     if (res == (size_t)-1)
     {
         perror("iconv reset");
-        throw std::exception();
+        throw LibiconvWrapperException("iconv_reset error");
     }
 
 }
@@ -55,9 +81,12 @@ void LibiconvWrapper::ConvertBuffer(char* inbuf, const size_t inbuf_size,
     res = iconv(conversion_descriptor_, inbuf1, &inbuf_size_, outbuf1, &outbuf_size_);
     if (res == (size_t)-1)
     {
-        perror("iconv");
+        perror("iconv error");
         std::cerr << "inbuf_size: " << inbuf_size_ << ", outbuf_size: " << outbuf_size_ << std::endl;
-        throw std::exception();
+
+        // TODO: ugly string formatting
+        throw LibiconvWrapperException("iconv error: input encoding: " + fromcode_ \
+                                       + ", output encoding: " + tocode_);
     }
 
     // debug
