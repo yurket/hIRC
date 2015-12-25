@@ -1,6 +1,8 @@
 #ifndef LOGGER_H_
 #define LOGGER_H_
 
+#include <iostream>
+
 #include <ctime>
 #include <stdexcept>
 #include <fstream>
@@ -54,7 +56,7 @@ void Logger::Log(const std::string &s)
     {
         throw std::logic_error("Logger: not initialized!");
     }
-    file_ << s;
+    file_ << s << std::endl;
     file_.flush();
 }
 

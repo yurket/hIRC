@@ -12,6 +12,26 @@
 
 #include "libiconv_wrapper.h"
 
+namespace
+{
+
+bool IfPingRequest(const char *recv_buf)
+{
+    if (recv_buf == NULL)
+        return false;
+
+    const std::string kPingString = std::string("PING :");
+
+    std::string received_str = std::string(recv_buf);
+    if (received_str.find(kPingString) == std::string::npos)
+        return false;
+    else
+        return true;
+}
+
+} // namespace
+
+
 
 /************************** PUBLIC **************************/
 
@@ -57,7 +77,7 @@ void IrcClient::Connect(const std::string &server_ip, const unsigned int server_
         close(socket_);
         _exit(1);
     }
-    logger_.Log("Successfully connected.\n");
+    logger_.Log("Successfully connected");
 }
 
 
@@ -101,7 +121,7 @@ void IrcClient::Register(const std::string &nick, const std::string &real_name)
     send_str = "USER " + nick + " 0 * :" + real_name + "\r\n";
     SendOrDie(send_str, verbose);
 
-    logger_.Log("Successfully registered with name " + nick + '\n');
+    logger_.Log("Successfully registered with name " + nick);
 }
 
 void IrcClient::JoinRoom(const std::string &nick, const std::string &room_name)
@@ -137,12 +157,14 @@ void IrcClient::Communicate()
     bool client_joined = false;
 
     LibiconvWrapper converter(config_.encoding(), "UTF-8");
-    while(1){
+    while(1)
+    {
         memset(recv_buf, 0, sizeof(recv_buf));
         memset(iconv_buf, 0, sizeof(iconv_buf));
         poll_res = poll(fds, 1, timeout);
 
-        if (poll_res > 0){
+        if (poll_res > 0)
+        {
             no_new_info_counter = 0;
 
             // reduce receive length by 1 to have null-terminated string
@@ -160,8 +182,7 @@ void IrcClient::Communicate()
 
             std::cerr << "received: " << std::endl;
             std::cerr << iconv_buf << std::endl;
-            logger_.Log(iconv_buf);
-
+            LogPrettifiedMessage(iconv_buf);
         }
         else if (poll_res == 0)
         {
@@ -182,7 +203,9 @@ void IrcClient::Communicate()
         }
 
         if (AutomaticallyHandledMsg(recv_buf))
+        {
             continue;
+        }
 
 
         /* Debug code */
@@ -230,21 +253,6 @@ void IrcClient::SendPONG(const char *recv_buf)
     }
 }
 
-static bool IfPingRequest(const char *recv_buf)
-{
-    if (recv_buf == NULL)
-        return false;
-
-    const std::string kPingString = std::string("PING :");
-
-    std::string received_str = std::string(recv_buf);
-    if (received_str.find(kPingString) == std::string::npos)
-        return false;
-    else
-        return true;
-}
-
-
 /*
   returns *TRUE*, if message was automatically handled and
   *FALSE* otherwise.
@@ -258,7 +266,6 @@ bool IrcClient::AutomaticallyHandledMsg(const char *recv_buf)
     }
     return false;
 }
-
 
 /*
   Send *buf* of length *len* using opened class member *socket_*.
@@ -280,6 +287,17 @@ void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
     }
 }
 
+void IrcClient::LogPrettifiedMessage(const std::string &message)
+{
+    if (message.find("PING :") != std::string::npos)
+    {
+        return;
+    }
+
+    // TODO: remove trailing \r\n
+
+    logger_.Log(message);
+}
 
 
 int main()
