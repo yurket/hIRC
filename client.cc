@@ -7,26 +7,50 @@
 #include <poll.h>
 #include <unistd.h>
 
+#include <cassert>
 #include <cstdio>
 #include <cstring>
+#include <stdexcept>
 
 #include "libiconv_wrapper.h"
 
 namespace
 {
 
-bool IfPingRequest(const char *recv_buf)
+bool IfPingRequest(const char* recv_buf)
 {
+    assert(recv_buf != NULL);
     if (recv_buf == NULL)
+    {
         return false;
+    }
 
     const std::string kPingString = std::string("PING :");
 
     std::string received_str = std::string(recv_buf);
-    if (received_str.find(kPingString) == std::string::npos)
-        return false;
-    else
+    if (received_str.find(kPingString) == 0)
+    {
         return true;
+    }
+    return false;
+}
+
+bool IfErrorCommand(const char* recv_buf)
+{
+    assert(recv_buf != NULL);
+    if (recv_buf == NULL)
+    {
+        return false;
+    }
+
+    const std::string kErrorString = std::string("ERROR :");
+
+    std::string received_str = std::string(recv_buf);
+    if (received_str.find(kErrorString) == 0)
+    {
+        return true;
+    }
+    return false;
 }
 
 } // namespace
@@ -56,7 +80,7 @@ void IrcClient::Connect(const std::string &server_ip, const unsigned int server_
     socket_ = socket(AF_INET, SOCK_STREAM, kNoFlags);
     if (socket_ == -1)
     {
-        perror("Can't create socket!");
+        perror("Can't create socket");
         _exit(1);
     }
 
@@ -65,7 +89,7 @@ void IrcClient::Connect(const std::string &server_ip, const unsigned int server_
     res = inet_aton(server_ip.c_str(), &addr.sin_addr);
     if (res != 1)
     {
-        perror("inet_pton error!");
+        perror("inet_aton error");
         close(socket_);
         _exit(1);
     }
@@ -73,7 +97,7 @@ void IrcClient::Connect(const std::string &server_ip, const unsigned int server_
     res = connect(socket_, (const struct sockaddr *)&addr, sizeof(addr));
     if (res == -1)
     {
-        perror("connect error!");
+        perror("connect error");
         close(socket_);
         _exit(1);
     }
@@ -144,15 +168,16 @@ void IrcClient::Communicate()
     char recv_buf[kRecvBufLen] = { 0 };
     char iconv_buf[kIconvBufLen] = { 0 };
     char send_buf[kSendBufLen] = { 0 };
-    int res = 0, poll_res = 0;
+    int res = 0, ready = 0;
     unsigned int send_size = 0;
+
     struct pollfd fds[1];
     fds[0].fd = socket_;
     fds[0].events = POLLIN;
     fds[0].revents = 0;
+    const unsigned int nfds = 1;
+    const unsigned int timeout_in_msecs = 1000;
 
-    // timeout in msecs
-    const unsigned int timeout = 1000;
     unsigned int no_new_info_counter = 0;
     bool client_joined = false;
 
@@ -161,9 +186,9 @@ void IrcClient::Communicate()
     {
         memset(recv_buf, 0, sizeof(recv_buf));
         memset(iconv_buf, 0, sizeof(iconv_buf));
-        poll_res = poll(fds, 1, timeout);
+        ready = poll(fds, nfds, timeout_in_msecs);
 
-        if (poll_res > 0)
+        if (ready > 0)
         {
             no_new_info_counter = 0;
 
@@ -182,9 +207,15 @@ void IrcClient::Communicate()
 
             std::cerr << "received: " << std::endl;
             std::cerr << iconv_buf << std::endl;
+
+            if (AutomaticallyHandledMsg(recv_buf))
+            {
+                continue;
+            }
+
             LogPrettifiedMessage(iconv_buf);
         }
-        else if (poll_res == 0)
+        else if (ready == 0)
         {
             no_new_info_counter++;
             if (no_new_info_counter >= 3 && !client_joined)
@@ -193,7 +224,7 @@ void IrcClient::Communicate()
                 client_joined = true;
             }
         }
-        else if (poll_res == -1)
+        else if (ready == -1)
         {
             perror("poll failed!");
             logger_.Log("poll failed!");
@@ -201,12 +232,6 @@ void IrcClient::Communicate()
             close(socket_);
             _exit(1);
         }
-
-        if (AutomaticallyHandledMsg(recv_buf))
-        {
-            continue;
-        }
-
 
         /* Debug code */
         // cin.getline(send_buf, kSendBufLen);
@@ -220,7 +245,6 @@ void IrcClient::Communicate()
         //     SendOrDie(send_buf, true);
         //     memset(send_buf, 0, kSendBufLen);
         // }
-
     }
 }
 
@@ -228,8 +252,11 @@ void IrcClient::Communicate()
 
 void IrcClient::SendPONG(const char *recv_buf)
 {
+    assert(recv_buf != NULL);
     if (recv_buf == NULL)
-        return ;
+    {
+        return;
+    }
     std::cerr << "[D] got PING: " << std::endl << recv_buf << std::endl;
     const std::string kPongString = std::string("PONG");
 
@@ -264,6 +291,12 @@ bool IrcClient::AutomaticallyHandledMsg(const char *recv_buf)
         SendPONG(recv_buf);
         return true;
     }
+    if (IfErrorCommand(recv_buf))
+    {
+        throw std::runtime_error("Got unexpected 'exit' message from server");
+        // JoinRoom(config_.nick(), config_.room());
+        // return true;
+    }
     return false;
 }
 
@@ -289,14 +322,25 @@ void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
 
 void IrcClient::LogPrettifiedMessage(const std::string &message)
 {
+    if (message.empty())
+    {
+        logger_.Log("[!] empty message");
+    }
     if (message.find("PING :") != std::string::npos)
     {
         return;
     }
 
-    // TODO: remove trailing \r\n
+    std::string log_message = message;
 
-    logger_.Log(message);
+    // remove trailing \r\n
+    size_t pos = message.rfind("\r\n");
+    if (pos != std::string::npos)
+    {
+        log_message = message.substr(0, pos);
+    }
+
+    logger_.Log(log_message);
 }
 
 
