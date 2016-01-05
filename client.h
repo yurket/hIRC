@@ -8,8 +8,7 @@
 class IrcClient
 {
 public:
-    IrcClient();
-    IrcClient(const std::string &config_name);
+    explicit IrcClient(const std::string &config_name);
 
     // forbid CC
     IrcClient(const IrcClient&) = delete;

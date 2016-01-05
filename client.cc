@@ -59,12 +59,6 @@ bool IfErrorCommand(const char* recv_buf)
 
 /************************** PUBLIC **************************/
 
-IrcClient::IrcClient()
-    : logger_(Logger("test.log"))
-    , config_(XmlConfig())
-{
-}
-
 IrcClient::IrcClient(const std::string &config_filename)
     : logger_(Logger("test.log"))
     , config_(XmlConfig(config_filename))

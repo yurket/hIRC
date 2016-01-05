@@ -10,7 +10,6 @@
 class XmlConfig
 {
 public:
-    XmlConfig();
     explicit XmlConfig(const std::string &filename);
     void load(const std::string &filename);
     void print_config() const;
@@ -24,7 +23,6 @@ public:
 
 private:
     std::string filename_;
-    bool initialized_;
 
     std::string nick_;
     std::string real_name_;
@@ -34,11 +32,6 @@ private:
     std::string encoding_;
     std::string room_;
 };
-
-XmlConfig::XmlConfig()
-    : initialized_(false)
-{
-}
 
 XmlConfig::XmlConfig(const std::string &filename)
     : filename_(filename)
@@ -67,8 +60,6 @@ void XmlConfig::load(const std::string &filename)
         std::clog << "[W] settings default encoding to \"UTF-8\"" << std::endl;
         encoding_ = "UTF-8";
     }
-
-    initialized_ = true;
 }
 
 void XmlConfig::print_config() const
@@ -85,45 +76,32 @@ void XmlConfig::print_config() const
 
 std::string XmlConfig::nick() const
 {
-    if (!initialized_)
-        throw std::logic_error("XmlConfig: not initialized!");
     return nick_;
 }
 
 std::string XmlConfig::real_name() const
 {
-    if (!initialized_)
-        throw std::logic_error("XmlConfig: not initialized!");
     return real_name_;
 }
 
 std::string XmlConfig::server_ip() const
 {
-    if (!initialized_)
-        throw std::logic_error("XmlConfig: not initialized!");
     return server_ip_;
 }
 
 unsigned short int XmlConfig::server_port() const
 {
-    if (!initialized_)
-        throw std::logic_error("XmlConfig: not initialized!");
     return server_port_;
 }
 
 std::string XmlConfig::encoding() const
 {
-    if (!initialized_)
-        throw std::logic_error("XmlConfig: not initialized!");
     return encoding_;
 }
 
 std::string XmlConfig::room() const
 {
-    if (!initialized_)
-        throw std::logic_error("XmlConfig: not initialized!");
     return room_;
 }
-
 
 #endif  // XML_CONFIG_H
