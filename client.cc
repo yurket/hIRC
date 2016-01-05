@@ -293,6 +293,7 @@ bool IrcClient::AutomaticallyHandledMsg(const char *recv_buf)
     }
     if (IfErrorCommand(recv_buf))
     {
+        logger_.Log("Got unexpected 'exit' message from server. Will try to restart");
         throw std::runtime_error("Got unexpected 'exit' message from server");
         // JoinRoom(config_.nick(), config_.room());
         // return true;
@@ -347,13 +348,23 @@ void IrcClient::LogPrettifiedMessage(const std::string &message)
 int main()
 {
     XmlConfig config("bynets.xml");
-    IrcClient client("bynets.xml");
     config.print_config();
-    std::cerr << std::endl << std::endl;
 
-    client.Connect(config.server_ip(), config.server_port());
-    client.Register(config.nick(), config.real_name());
-    client.Communicate();
+    while(true)
+    {
+        IrcClient client("bynets.xml");
+        std::cerr << std::endl << std::endl;
 
+        client.Connect(config.server_ip(), config.server_port());
+        client.Register(config.nick(), config.real_name());
+        try
+        {
+            client.Communicate();
+        }
+        catch (const std::exception& e)
+        {
+            continue;
+        }
+    }
     return 0;
 }

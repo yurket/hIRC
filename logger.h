@@ -14,7 +14,7 @@ class Logger
     Logger();
     explicit Logger(
         const std::string &filename,
-        const std::fstream::openmode mode = std::fstream::out
+        const std::fstream::openmode mode = std::fstream::app
         );
     ~Logger();
     // TODO:  note: ‘Logger::Logger(const Logger&)’ is implicitly deleted
