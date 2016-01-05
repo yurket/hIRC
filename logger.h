@@ -56,7 +56,10 @@ void Logger::Log(const std::string &s)
     {
         throw std::logic_error("Logger: not initialized!");
     }
-    file_ << s << std::endl;
+    std::time_t const now = std::time(NULL);
+    char now_string[100];
+    strftime(now_string, sizeof(now_string), "%T", std::localtime(&now));
+    file_ << now_string << ": "  << s << std::endl;
     file_.flush();
 }
 
