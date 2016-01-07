@@ -11,8 +11,7 @@
 class Logger
 {
  public:
-    Logger();
-    explicit Logger(
+    Logger(
         const std::string &filename,
         const std::fstream::openmode mode = std::fstream::app
         );
@@ -23,22 +22,18 @@ class Logger
 
     void Log(const std::string &s);
     void PrintHeader();
+    void DisableLogging();
+    void EnableLogging();
 
 private:
     std::ofstream file_;
-    bool initialized_;
+    bool logging_enabled_;
 };
 
-
-Logger::Logger()
-    : initialized_(false)
-{
-}
-
-Logger::Logger(const std::string &filename, const std::fstream::openmode mode)
+Logger::Logger(const std::string &filename, const std::fstream::openmode mode) :
+    logging_enabled_(true)
 {
     file_.open(filename.c_str(), mode);
-    initialized_ = true;
     PrintHeader();
 }
 
@@ -52,10 +47,11 @@ Logger::~Logger()
 
 void Logger::Log(const std::string &s)
 {
-    if (!initialized_)
+    if (!logging_enabled_)
     {
-        throw std::logic_error("Logger: not initialized!");
+        return;
     }
+
     std::time_t const now = std::time(NULL);
     char now_string[100];
     strftime(now_string, sizeof(now_string), "%T", std::localtime(&now));
@@ -65,11 +61,22 @@ void Logger::Log(const std::string &s)
 
 void Logger::PrintHeader()
 {
-    Log("\n\n================================================================================\n");
+    std::string header;
+    header += "\n\n================================================================================\n";
     std::time_t now = std::time(NULL);
-    Log(std::ctime(&now));
-    Log("================================================================================\n");
+    header += std::ctime(&now);
+    header += "================================================================================\n";
+    Log(header);
 }
 
+void Logger::DisableLogging()
+{
+    logging_enabled_ = false;
+}
+
+void Logger::EnableLogging()
+{
+    logging_enabled_ = true;
+}
 
 #endif // LOGGER_H_
