@@ -53,9 +53,9 @@ void Logger::Log(const std::string &s)
     }
 
     std::time_t const now = std::time(NULL);
-    char now_string[100];
-    strftime(now_string, sizeof(now_string), "%T", std::localtime(&now));
-    file_ << now_string << ": "  << s << std::endl;
+    char pretty_time[100];
+    strftime(pretty_time, sizeof(pretty_time), "%T", std::localtime(&now));
+    file_ << pretty_time << ": "  << s << std::endl;
     file_.flush();
 }
 
@@ -64,8 +64,10 @@ void Logger::PrintHeader()
     std::string header;
     header += "\n\n================================================================================\n";
     std::time_t now = std::time(NULL);
-    header += std::ctime(&now);
-    header += "================================================================================\n";
+    char pretty_time[100];
+    strftime(pretty_time, sizeof(pretty_time), "%c %Z", std::localtime(&now));
+    header += pretty_time;
+    header += "\n================================================================================\n";
     Log(header);
 }
 
