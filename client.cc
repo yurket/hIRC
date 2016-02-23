@@ -17,6 +17,23 @@
 namespace
 {
 
+// TODO: write tests!
+std::vector<std::string> SplitOnLines(char const* text_of_chars)
+{
+    std::string const text(text_of_chars);
+    std::vector<std::string> result;
+
+    std::size_t last_pos = 0;
+    for (std::size_t endline_pos = text.find('\n');
+         endline_pos != std::string::npos;
+         endline_pos = text.find('\n', endline_pos + 1))
+    {
+        result.push_back(text.substr(last_pos, (endline_pos-last_pos)));
+        last_pos = endline_pos;
+    }
+    return result;
+}
+
 bool IfPingRequest(const char* recv_buf)
 {
     assert(recv_buf != NULL);
@@ -206,12 +223,16 @@ void IrcClient::Communicate()
             std::cerr << "received: " << std::endl;
             std::cerr << iconv_buf << std::endl;
 
-            if (AutomaticallyHandledMsg(recv_buf))
+            // process each line separately
+            std::vector<std::string> const messages = SplitOnLines(iconv_buf);
+            for (auto& msg : messages)
             {
-                continue;
+                if (AutomaticallyHandledMsg(msg.c_str()))
+                {
+                    continue;
+                }
+                LogPrettifiedMessage(msg.c_str());
             }
-
-            LogPrettifiedMessage(iconv_buf);
         }
         else if (ready == 0)
         {
