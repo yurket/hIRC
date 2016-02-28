@@ -4,7 +4,6 @@
 #include "logger.h"
 #include "xml_config.h"
 
-
 class IrcClient
 {
 public:
@@ -28,6 +27,8 @@ private:
     static constexpr unsigned int kIconvBufLen = kRecvBufLen * 6;
 
     bool AutomaticallyHandledMsg(const char *in_buf);
+    void HandleMessage(const std::string& msg);
+
     void SendPONG(const char *recv_buf);
     void SendOrDie(const std::string &send_str, bool verbose=false);
     void LogPrettifiedMessage(const std::string &message);

@@ -1,4 +1,5 @@
 #include "client.h"
+#include "libiconv_wrapper.h"
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -7,12 +8,12 @@
 #include <poll.h>
 #include <unistd.h>
 
+#include <iostream>
 #include <cassert>
 #include <cstdio>
 #include <cstring>
 #include <stdexcept>
-
-#include "libiconv_wrapper.h"
+#include <vector>
 
 namespace
 {
@@ -225,7 +226,7 @@ void IrcClient::Communicate()
 
             // process each line separately
             std::vector<std::string> const messages = SplitOnLines(iconv_buf);
-            for (auto& msg : messages)
+            for (const auto& msg : messages)
             {
                 if (AutomaticallyHandledMsg(msg.c_str()))
                 {
@@ -361,29 +362,4 @@ void IrcClient::LogPrettifiedMessage(const std::string &message)
     }
 
     logger_.Log(log_message);
-}
-
-
-int main()
-{
-    XmlConfig config("bynets.xml");
-    config.print_config();
-
-    while(true)
-    {
-        IrcClient client("bynets.xml");
-        std::cerr << std::endl << std::endl;
-
-        client.Connect(config.server_ip(), config.server_port());
-        client.Register(config.nick(), config.real_name());
-        try
-        {
-            client.Communicate();
-        }
-        catch (const std::exception& e)
-        {
-            continue;
-        }
-    }
-    return 0;
 }
