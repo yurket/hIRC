@@ -363,3 +363,8 @@ void IrcClient::LogPrettifiedMessage(const std::string &message)
 
     logger_.Log(log_message);
 }
+
+void HandleMessage(const std::string& msg)
+{
+
+}
