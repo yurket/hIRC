@@ -1,5 +1,6 @@
+#include "message.h"
+
 #include <iostream>
-#include <regex>
 #include <string>
 #include <vector>
 
@@ -10,28 +11,6 @@ namespace
 
 typedef std::vector<std::string> StringVector;
 
-
-enum class Command
-{
-    JOIN, PRIVMSG, QUIT, UNKNOWN
-};
-
-Command ToCommand(const std::string& command)
-{
-    if (command == "JOIN")
-    {
-        return Command::JOIN;
-    }
-    else if (command == "PRIVMSG")
-    {
-        return Command::PRIVMSG;
-    }
-    else if (command == "QUIT")
-    {
-        return Command::QUIT;
-    }
-    return Command::UNKNOWN;
-}
 
 StringVector GetExamples(const std::string& filename)
 {
@@ -45,32 +24,12 @@ StringVector GetExamples(const std::string& filename)
     return ret;
 }
 
-void MatchStrings(const StringVector& v)
+void LogPrettyMessages(const StringVector& v)
 {
-    const std::regex commandRegex("^:[^ ]+ ([A-Z]+) .*");
     for (const auto& s : v)
     {
-        std::smatch commandMatch;
-        if (std::regex_match(s, commandMatch, commandRegex))
-        {
-            if (commandMatch.size() == 2)
-            {
-                std::string const command = commandMatch[1].str();
-                std::cout << s << std::endl << " has command: " << command << '\n';
-                const Command cmd = ToCommand(command);
-                switch(cmd)
-                {
-                case Command::PRIVMSG:
-                    break;
-                default:
-                    break;
-                }
-            }
-        }
-        else
-        {
-            std::cout << s << std::endl << " NO COMMAND FOUND" << '\n';
-        }
+        Message message(s);
+        std::cerr << message.GetStringForLogging() << std::endl;
     }
 }
 
@@ -80,7 +39,7 @@ int main()
 {
     StringVector exampleStrings = GetExamples("test_messages.txt");
 
-    MatchStrings(exampleStrings);
+    LogPrettyMessages(exampleStrings);
     return 0;
 }
 
