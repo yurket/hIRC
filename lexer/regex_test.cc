@@ -29,6 +29,7 @@ void LogPrettyMessages(const StringVector& v)
     for (const auto& s : v)
     {
         Message message(s);
+        // std::cerr << s << std::endl;
         std::cerr << message.GetStringForLogging() << std::endl;
     }
 }
