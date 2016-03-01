@@ -13,8 +13,8 @@ lex.yy.c: messages.flex
 	flex messages.flex
 
 
-regex_test: regex_test.cc
-	$(CXX) -o regex_test regex_test.cc ${CXX_FLAGS}
+regex_test: regex_test.cc message.cc message.h
+	$(CXX) -o regex_test regex_test.cc message.cc ${CXX_FLAGS}
 
 
 clean:

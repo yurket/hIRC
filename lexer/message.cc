@@ -1,3 +1,4 @@
+
 #include "message.h"
 
 #include <iostream>
@@ -14,23 +15,63 @@ std::string Message::GetStringForLogging() const
 {
     switch(static_cast<int>(command_))
     {
+    case CommandType::JOIN:
+        return GetPrettyJoinMessage();
     case CommandType::PRIVMSG:
-        GetPrettyPrivateMessage();
-        break;
+        return GetPrettyPrivateMessage();
+    case CommandType::QUIT:
+        return GetPrettyQuitMessage();
     default:
-        break;
+        return std::string();
     }
-    return std::string();
+}
+
+std::string Message::GetPrettyJoinMessage() const
+{
+    const std::regex nickRegex("^:([^ !]+).*");
+    std::smatch nickMatch;
+    if (!std::regex_match(message_, nickMatch, nickRegex) || nickMatch.size() != 2)
+    {
+        std::cerr << "GetPrettyPrivateMessage: can't match nick in message \"" <<
+            message_ << "\"" << ", match size: " << nickMatch.size() << std::endl;
+        return std::string();
+    }
+    const std::string nick = nickMatch[1].str();
+
+    const std::string prettyMessage = nick + " just joined the room";
+    return prettyMessage;
 }
 
 std::string Message::GetPrettyPrivateMessage() const
 {
-    const std::regex nickRegex("^:(\d+)[! ] .*\r\n");
+    const std::regex nickRegex("^:([^ !]+).*");
     std::smatch nickMatch;
-    if (!std::regex_match(message_, nickMatch, nickRegex))
+    if (!std::regex_match(message_, nickMatch, nickRegex) || nickMatch.size() != 2)
     {
-        std::cerr << "can't match nick in message \"" << message_ << "\"" << std::endl;
+        std::cerr << "GetPrettyPrivateMessage: can't match nick in message \"" <<
+            message_ << "\"" << ", match size: " << nickMatch.size() << std::endl;
+        return std::string();
     }
+    const std::string nick = nickMatch[1].str();
+
+    // ": nick!hostname PRIVMSG #channelName :message body goes here
+    const std::regex msgBodyRegex("^:[^ ]+ PRIVMSG #[^ ]+ :(.*)");
+    std::smatch msgBodyMatch;
+    if (!std::regex_match(message_, msgBodyMatch, msgBodyRegex) || msgBodyMatch.size() != 2)
+    {
+        std::cerr << "GetPrettyPrivateMessage: can't match message body in message \"" <<
+            message_ << "\"" << ", nick is " << nick << std::endl;
+        return std::string();
+    }
+    const std::string msgBody = msgBodyMatch[1].str();
+
+    const std::string prettyMessage = nick + ": " + msgBody;
+    return prettyMessage;
+}
+
+std::string Message::GetPrettyQuitMessage() const
+{
+    return std::string();
 }
 
 Message::CommandType Message::StringToCommand(const std::string& command) const
@@ -58,7 +99,7 @@ Message::CommandType Message::GetCommandFromMessageString(const std::string& mes
     {
         if (commandMatch.size() == 2)
         {
-            std::string const command = commandMatch[1].str();
+            const std::string command = commandMatch[1].str();
             std::cerr << message << std::endl << " has command: " << command << '\n';
             return StringToCommand(command);
         }

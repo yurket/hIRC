@@ -12,7 +12,9 @@ public:
     std::string GetStringForLogging() const;
 
 private:
+    std::string GetPrettyJoinMessage() const;
     std::string GetPrettyPrivateMessage() const;
+    std::string GetPrettyQuitMessage() const;
 
     CommandType StringToCommand(const std::string& command_string) const;
     CommandType GetCommandFromMessageString(const std::string& message);
