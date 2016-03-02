@@ -1,0 +1,36 @@
+:elfenlaid!elfenlaid@86.57.155.44 PRIVMSG #haskell :ого
+:lite_w!yury.gavri@128.140.241.11 PRIVMSG #haskell ::D
+:elfenlaid!elfenlaid@86.57.155.44 QUIT :Client quit
+:elfenlaid!elfenlaid@93.85.75.240 QUIT :Ping timeout: 126 seconds
+:lite5!lite5@ec2-52-91-63-139.compute-1.amazonaws.com JOIN :#haskell
+:irc.mgts.by 332 lite5 #haskell :codewars.com, hacker.org, boundvariable.org, hackerrank.com - решаем, хвастаемся [бэкап канал - #haskell-by@freenode]
+:irc.mgts.by 333 lite5 #haskell sf 1444848839
+:irc.mgts.by 366 lite5 #haskell :End of /NAMES list.
+:shiroginne!uid7778@ealing.irccloud.com PRIVMSG #haskell :убежал уже :/
+:elfenlaid!elfenlaid@93.85.69.30 JOIN :#haskell
+:elfenlaid!elfenlaid@93.85.69.30 QUIT :Ping timeout: 123 seconds
+:elfenlaid!elfenlaid@93.85.69.30 JOIN :#haskell
+:elfenlaid!elfenlaid@93.85.69.30 QUIT :Ping timeout: 123 seconds
+:elfenlaid!elfenlaid@93.85.69.30 JOIN :#haskell
+:elfenlaid!elfenlaid@93.85.69.30 QUIT :Ping timeout: 127 seconds
+:shiroginne!uid7778@ealing.irccloud.com QUIT :Client quit
+:Neuron[win]!Force@134.17.132.27 QUIT :Ping timeout: 124 seconds
+:silver!silver@93.85.10.153 QUIT :Read error: Connection reset by peer
+:elfenlaid!elfenlaid@93.85.69.30 JOIN :#haskell
+:elfenlaid!elfenlaid@93.85.69.30 PRIVMSG #haskell :We just kicked off CS240H at Stanford again. A whole new generation to imbue with Haskell idealism before JS and ObjC crush their souls! (с) BOS
+:elfenlaid!elfenlaid@93.85.69.30 QUIT :Ping timeout: 126 seconds
+:elfenlaid!elfenlaid@93.85.69.30 JOIN :#haskell
+:elfelaid_!elfenlaid@93.85.69.30 JOIN :#haskell
+:gurio!arseni@host-188-174-233-152.customer.m-online.net JOIN :#haskell
+:lite_w!yury.gavri@128.140.241.11 QUIT :Read error: Input/output error
+:lite_w!yury.gavri@128.140.241.11 JOIN :#haskell
+
+08:13:11: 
+:irc.mgts.by 332 lite5 #haskell :codewars.com, hacker.org, boundvariable.org, hackerrank.com - решаем, хвастаемся [бэкап канал - #haskell-by@freenode]
+08:13:11: 
+:irc.mgts.by 333 lite5 #haskell sf 1444848839
+08:13:11: 
+:irc.mgts.by 353 lite5 = #haskell :lite5 elfenlaid long-teng shiroginne skvadrik slybot sf lite lite_w myst|fon myst|work 
+08:13:11: 
+:irc.mgts.by 366 lite5 #haskell :End of /NAMES list.
+:lite!lite@nat3-minsk-pool-46-53-182-87.telecom.by PRIVMSG #testotest :как дела?

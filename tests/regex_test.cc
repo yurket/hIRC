@@ -1,4 +1,4 @@
-#include "message.h"
+#include "../message.h"
 
 #include <iostream>
 #include <string>
@@ -38,7 +38,7 @@ void LogPrettyMessages(const StringVector& v)
 
 int main()
 {
-    StringVector exampleStrings = GetExamples("test_messages.txt");
+    StringVector exampleStrings = GetExamples("data/test_messages.txt");
 
     LogPrettyMessages(exampleStrings);
     return 0;
