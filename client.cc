@@ -29,8 +29,8 @@ std::vector<std::string> SplitOnLines(char const* text_of_chars)
          endline_pos != std::string::npos;
          endline_pos = text.find('\n', endline_pos + 1))
     {
-        result.push_back(text.substr(last_pos, (endline_pos-last_pos)));
-        last_pos = endline_pos;
+        result.push_back(text.substr(last_pos, (endline_pos-last_pos+1)));
+        last_pos = endline_pos + 1;
     }
     return result;
 }
