@@ -4,7 +4,7 @@ class Message
 {
     enum CommandType
     {
-        JOIN, PRIVMSG, QUIT, Unknown
+        JOIN, PRIVMSG, QUIT, NICK, Unknown
     };
 
 public:
@@ -17,8 +17,8 @@ private:
     std::string GetPrettyQuitMessage() const;
 
     CommandType StringToCommand(const std::string& command_string) const;
-    CommandType GetCommandFromMessageString(const std::string& message);
-    
+    CommandType GetCommandFromMessageString(const std::string& message) const;
+
 private:
     std::string message_;
     CommandType command_;

@@ -1,5 +1,6 @@
 #include "client.h"
 #include "libiconv_wrapper.h"
+#include "message.h"
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -232,7 +233,9 @@ void IrcClient::Communicate()
                 {
                     continue;
                 }
-                LogPrettifiedMessage(msg.c_str());
+
+                Message message(msg);
+                LogPrettifiedMessage(message.GetStringForLogging());
             }
         }
         else if (ready == 0)
@@ -362,9 +365,4 @@ void IrcClient::LogPrettifiedMessage(const std::string &message)
     }
 
     logger_.Log(log_message);
-}
-
-void HandleMessage(const std::string& msg)
-{
-
 }

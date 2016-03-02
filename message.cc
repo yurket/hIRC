@@ -3,10 +3,10 @@
 #include <iostream>
 #include <regex>
 
-
 namespace
 {
 
+const std::regex NickRegex("^:([^ !]+).*\r\n");
 const std::string ParseError = "<parse ERROR>";
 
 std::string GetFirstSubmatch(const std::string& s, const std::regex& regex)
@@ -47,20 +47,19 @@ std::string Message::GetStringForLogging() const
 
 std::string Message::GetPrettyJoinMessage() const
 {
-    const std::regex nickRegex("^:([^ !]+).*");
-    const std::string nick = GetFirstSubmatch(message_, nickRegex);
+
+    const std::string nick = GetFirstSubmatch(message_, NickRegex);
 
     return nick + " joined the room";
 }
 
 std::string Message::GetPrettyPrivateMessage() const
 {
-    const std::regex nickRegex("^:([^ !]+).*");
-    const std::string nick = GetFirstSubmatch(message_, nickRegex);
+    const std::string nick = GetFirstSubmatch(message_, NickRegex);
 
     // messge_ is something like:
     //: nick!hostname PRIVMSG #channelName :message body goes here
-    const std::regex msgBodyRegex("^:[^ ]+ PRIVMSG #[^ ]+ :(.*)");
+    const std::regex msgBodyRegex("^:[^ ]+ PRIVMSG #[^ ]+ :(.*)\r\n");
     const std::string msgBody = GetFirstSubmatch(message_, msgBodyRegex);
 
     return nick + ": " + msgBody;
@@ -68,8 +67,7 @@ std::string Message::GetPrettyPrivateMessage() const
 
 std::string Message::GetPrettyQuitMessage() const
 {
-    const std::regex nickRegex("^:([^ !]+).*");
-    const std::string nick = GetFirstSubmatch(message_, nickRegex);
+    const std::string nick = GetFirstSubmatch(message_, NickRegex);
 
     return nick + " left the room";
 }
@@ -88,13 +86,12 @@ Message::CommandType Message::StringToCommand(const std::string& command) const
     {
         return CommandType::QUIT;
     }
+    std::cerr << "Can't match command!" << std::endl;
     return CommandType::Unknown;
 }
 
-Message::CommandType Message::GetCommandFromMessageString(const std::string& message)
+Message::CommandType Message::GetCommandFromMessageString(const std::string& message) const
 {
-    const std::regex commandRegex("^:[^ ]+ ([A-Z]+) .*");
+    const std::regex commandRegex("^:[^ ]+ ([A-Z]+) .*\r\n");
     return StringToCommand(GetFirstSubmatch(message, commandRegex));
 }
-
-
