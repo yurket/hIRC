@@ -30,7 +30,7 @@ Message::Message(const std::string& message) :
 {
 }
 
-std::string Message::GetStringForLogging() const
+std::string Message::GetStringForLogging()
 {
     switch(static_cast<int>(command_))
     {
@@ -65,11 +65,11 @@ std::string Message::GetPrettyPrivateMessage() const
     return nick + ": " + msgBody;
 }
 
-std::string Message::GetPrettyQuitMessage() const
+std::string Message::GetPrettyQuitMessage()
 {
     const std::string nick = GetFirstSubmatch(message_, NickRegex);
 
-    return nick + " left the room";
+    return GetColoredNick(nick) + " left the room";
 }
 
 Message::CommandType Message::StringToCommand(const std::string& command) const
@@ -94,4 +94,23 @@ Message::CommandType Message::GetCommandFromMessageString(const std::string& mes
 {
     const std::regex commandRegex("^:[^ ]+ ([A-Z]+) .*\r\n");
     return StringToCommand(GetFirstSubmatch(message, commandRegex));
+}
+
+std::string Message::GetColoredNick(const std::string &raw_nickname)
+{
+    auto it = colored_nicknames.find(raw_nickname);
+
+    if (it == colored_nicknames.end()) {
+        std::size_t col_code = std::hash<std::string>{}(raw_nickname);
+        auto r = (col_code % 256 + 255) / 2;
+        auto g = ((col_code >> 8) % 256 + 255) / 2;
+        auto b = ((col_code >> 16) % 256 + 255) / 2;
+        std::ostringstream stringStream;
+        stringStream << "<font color=\"rgb(" << r << "," << g << "," << b << ")\">" << raw_nickname << "</font>";
+        colored_nicknames[raw_nickname] = stringStream.str();
+        return stringStream.str();
+    }
+    else {
+        return it->second;
+    }
 }
