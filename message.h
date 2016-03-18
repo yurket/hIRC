@@ -13,8 +13,8 @@ public:
     std::string GetStringForLogging();
 
 private:
-    std::string GetPrettyJoinMessage() const;
-    std::string GetPrettyPrivateMessage() const;
+    std::string GetPrettyJoinMessage();
+    std::string GetPrettyPrivateMessage();
     std::string GetPrettyQuitMessage();
     std::string GetColoredNick(const std::string &raw_nickname);
 

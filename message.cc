@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <regex>
+#include <iomanip>
 
 namespace
 {
@@ -45,15 +46,15 @@ std::string Message::GetStringForLogging()
     }
 }
 
-std::string Message::GetPrettyJoinMessage() const
+std::string Message::GetPrettyJoinMessage()
 {
 
     const std::string nick = GetFirstSubmatch(message_, NickRegex);
 
-    return nick + " joined the room";
+    return GetColoredNick(nick) + " joined the room";
 }
 
-std::string Message::GetPrettyPrivateMessage() const
+std::string Message::GetPrettyPrivateMessage()
 {
     const std::string nick = GetFirstSubmatch(message_, NickRegex);
 
@@ -62,7 +63,7 @@ std::string Message::GetPrettyPrivateMessage() const
     const std::regex msgBodyRegex("^:[^ ]+ PRIVMSG #[^ ]+ :(.*)\r\n");
     const std::string msgBody = GetFirstSubmatch(message_, msgBodyRegex);
 
-    return nick + ": " + msgBody;
+    return GetColoredNick(nick) + ": " + msgBody;
 }
 
 std::string Message::GetPrettyQuitMessage()
@@ -101,12 +102,11 @@ std::string Message::GetColoredNick(const std::string &raw_nickname)
     auto it = colored_nicknames.find(raw_nickname);
 
     if (it == colored_nicknames.end()) {
-        std::size_t col_code = std::hash<std::string>{}(raw_nickname);
-        auto r = (col_code % 256 + 255) / 2;
-        auto g = ((col_code >> 8) % 256 + 255) / 2;
-        auto b = ((col_code >> 16) % 256 + 255) / 2;
+        std::size_t hex_col_code = std::hash<std::string>{}(raw_nickname) & 0xFFFFFF;
         std::ostringstream stringStream;
-        stringStream << "<font color=\"rgb(" << r << "," << g << "," << b << ")\">" << raw_nickname << "</font>";
+        stringStream << "<font color=\"#"
+                        << std::setfill ('0') << std::setw(6)
+                        << std::hex << hex_col_code << "\">" << raw_nickname << "</font>";
         colored_nicknames[raw_nickname] = stringStream.str();
         return stringStream.str();
     }
