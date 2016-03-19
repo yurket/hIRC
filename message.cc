@@ -22,6 +22,12 @@ std::string GetFirstSubmatch(const std::string& s, const std::regex& regex)
     return match[1].str();
 }
 
+const std::string SystemGreyColor = "9EA2A3";
+std::string GetColoredString(const std::string& s, const std::string& hexColor)
+{
+    return "<font color=\"#" + hexColor + "\">" + s + "</font>";
+}
+
 } // namespace
 
 
@@ -51,7 +57,7 @@ std::string Message::GetPrettyJoinMessage()
 
     const std::string nick = GetFirstSubmatch(message_, NickRegex);
 
-    return GetColoredNick(nick) + " joined the room";
+    return GetColoredNick(nick) + GetColoredString(" joined the room", SystemGreyColor);
 }
 
 std::string Message::GetPrettyPrivateMessage()
@@ -70,7 +76,7 @@ std::string Message::GetPrettyQuitMessage()
 {
     const std::string nick = GetFirstSubmatch(message_, NickRegex);
 
-    return GetColoredNick(nick) + " left the room";
+    return GetColoredNick(nick) + GetColoredString(" left the room", SystemGreyColor);
 }
 
 Message::CommandType Message::StringToCommand(const std::string& command) const
