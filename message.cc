@@ -97,7 +97,7 @@ Message::CommandType Message::GetCommandFromMessageString(const std::string& mes
     return StringToCommand(GetFirstSubmatch(message, commandRegex));
 }
 
-std::string Message::GetColoredNick(const std::string &raw_nickname)
+std::string Message::GetColoredNick(const std::string& raw_nickname)
 {
     auto it = colored_nicknames.find(raw_nickname);
 
@@ -106,7 +106,7 @@ std::string Message::GetColoredNick(const std::string &raw_nickname)
         std::ostringstream stringStream;
         stringStream << "<font color=\"#"
                         << std::setfill ('0') << std::setw(6)
-                        << std::hex << hex_col_code << "\">" << raw_nickname << "</font>";
+                        << std::hex << hex_col_code << "\"><b>" << raw_nickname << "</b></font>";
         colored_nicknames[raw_nickname] = stringStream.str();
         return stringStream.str();
     }
