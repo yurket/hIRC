@@ -24,5 +24,5 @@ private:
 private:
     std::string message_;
     CommandType command_;
-    std::unordered_map<std::string,std::string> colored_nicknames;
+    std::unordered_map<std::string,std::string> colored_nicknames_;
 };

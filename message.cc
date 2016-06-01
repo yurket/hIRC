@@ -15,8 +15,6 @@ std::string GetFirstSubmatch(const std::string& s, const std::regex& regex)
     std::smatch match;
     if (!std::regex_match(s, match, regex) || match.size() != 2)
     {
-        // std::cerr << "GetFirstSubmatch: can't find match in message \"" <<
-        //     s << "\"" << ", match size: " << match.size() << std::endl;
         return ParseError;
     }
     return match[1].str();
@@ -105,15 +103,15 @@ Message::CommandType Message::GetCommandFromMessageString(const std::string& mes
 
 std::string Message::GetColoredNick(const std::string& raw_nickname)
 {
-    auto it = colored_nicknames.find(raw_nickname);
+    auto it = colored_nicknames_.find(raw_nickname);
 
-    if (it == colored_nicknames.end()) {
+    if (it == colored_nicknames_.end()) {
         std::size_t hex_col_code = std::hash<std::string>{}(raw_nickname) & 0xFFFFFF;
         std::ostringstream stringStream;
         stringStream << "<font color=\"#"
                         << std::setfill ('0') << std::setw(6)
                         << std::hex << hex_col_code << "\"><b>" << raw_nickname << "</b></font>";
-        colored_nicknames[raw_nickname] = stringStream.str();
+        colored_nicknames_[raw_nickname] = stringStream.str();
         return stringStream.str();
     }
     else {

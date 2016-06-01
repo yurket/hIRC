@@ -75,9 +75,6 @@ bool IfErrorCommand(const char* recv_buf)
 } // namespace
 
 
-
-/************************** PUBLIC **************************/
-
 IrcClient::IrcClient(const std::string &config_filename)
     : logger_(Logger("test.log"))
     , config_(XmlConfig(config_filename))
@@ -87,7 +84,7 @@ IrcClient::IrcClient(const std::string &config_filename)
 }
 
 
-void IrcClient::Connect(const std::string &server_ip, const unsigned int server_port)
+void IrcClient::Connect(const std::string &server_ip, const unsigned short server_port)
 {
     int res = 0;
     struct sockaddr_in addr;
@@ -119,44 +116,17 @@ void IrcClient::Connect(const std::string &server_ip, const unsigned int server_
     logger_.Log("Successfully connected");
 }
 
-
-// The quotation from RFC 2812:
-/*
-3.1 Connection Registration
-
-   The commands described here are used to register a connection with an
-   IRC server as a user as well as to correctly disconnect.
-
-   A "PASS" command is not required for a client connection to be
-   registered, but it MUST precede the latter of the NICK/USER
-   combination (for a user connection) or the SERVICE command (for a
-   service connection). The RECOMMENDED order for a client to register
-   is as follows:
-
-                           1. Pass message
-           2. Nick message                 2. Service message
-           3. User message
-
-   Upon success, the client will receive an RPL_WELCOME (for users) or
-   RPL_YOURESERVICE (for services) message indicating that the
-   connection is now registered and known the to the entire IRC network.
-   The reply message MUST contain the full client identifier upon which
-   it was registered.
- */
 void IrcClient::Register(const std::string &nick, const std::string &real_name)
 {
     std::string send_str;
     bool verbose=true;
 
-    // 1. Pass message
     send_str = "PASS 12345\r\n";
     SendOrDie(send_str, verbose);
 
-    // 2. Nick message
     send_str = "NICK " + nick + "\r\n";
     SendOrDie(send_str, verbose);
 
-    // 3. User message
     send_str = "USER " + nick + " 0 * :" + real_name + "\r\n";
     SendOrDie(send_str, verbose);
 
@@ -168,7 +138,7 @@ void IrcClient::JoinRoom(const std::string &nick, const std::string &room_name)
     // TODO: observe the state of connections to the rooms. With structure
     // like this: {'room': is_connected}
 
-    // To join string like this: ":lite5 JOIN #test_room_name" should be sent
+    // To join string like ":lite5 JOIN #test_room_name" should be sent
     std::string send_str;
     bool verbose = true;
 
@@ -184,9 +154,7 @@ void IrcClient::Communicate()
 {
     char recv_buf[kRecvBufLen] = { 0 };
     char iconv_buf[kIconvBufLen] = { 0 };
-    char send_buf[kSendBufLen] = { 0 };
     int res = 0, ready = 0;
-    unsigned int send_size = 0;
 
     struct pollfd fds[1];
     fds[0].fd = socket_;
@@ -225,11 +193,10 @@ void IrcClient::Communicate()
             std::cerr << "received: " << std::endl;
             std::cerr << iconv_buf << std::endl;
 
-            // process each line separately
             std::vector<std::string> const messages = SplitOnLines(iconv_buf);
             for (const auto& msg : messages)
             {
-                if (AutomaticallyHandledMsg(msg.c_str()))
+                if (IsAutomaticallyHandledMsg(msg.c_str()))
                 {
                     continue;
                 }
@@ -255,23 +222,8 @@ void IrcClient::Communicate()
             close(socket_);
             _exit(1);
         }
-
-        /* Debug code */
-        // cin.getline(send_buf, kSendBufLen);
-        // if (!strcmp(send_buf, "join"))
-        // {
-        //     JoinRoom(config_.nick(), config_.room());
-        //     memset(send_buf, 0, kSendBufLen);
-        // }
-        // else{
-        //     strcat(send_buf, "\r\n");
-        //     SendOrDie(send_buf, true);
-        //     memset(send_buf, 0, kSendBufLen);
-        // }
     }
 }
-
-/************************** PRIVATE  **************************/
 
 void IrcClient::SendPONG(const char *recv_buf)
 {
@@ -286,11 +238,10 @@ void IrcClient::SendPONG(const char *recv_buf)
     std::string received_str = std::string(recv_buf);
     size_t pos = received_str.find(":");
 
-    // TODO: sprintf?
     std::string pong_msg = kPongString + " " + config_.nick() + " ";
     if (pos != std::string::npos)
     {
-        // msg is smth like ":77E488E" for bynets server
+        // msg is smth like ":77E488E"
         std::string msg = received_str.substr(pos);
         pong_msg += msg;
         std::cerr << "[D] Sending PONG msg: " << pong_msg << std::endl;
@@ -303,11 +254,7 @@ void IrcClient::SendPONG(const char *recv_buf)
     }
 }
 
-/*
-  returns *TRUE*, if message was automatically handled and
-  *FALSE* otherwise.
- */
-bool IrcClient::AutomaticallyHandledMsg(const char *recv_buf)
+bool IrcClient::IsAutomaticallyHandledMsg(const char *recv_buf)
 {
     if (IfPingRequest(recv_buf))
     {
@@ -318,15 +265,10 @@ bool IrcClient::AutomaticallyHandledMsg(const char *recv_buf)
     {
         logger_.Log("Got unexpected 'exit' message from server. Will try to restart");
         throw std::runtime_error("Got unexpected 'exit' message from server");
-        // JoinRoom(config_.nick(), config_.room());
-        // return true;
     }
     return false;
 }
 
-/*
-  Send *buf* of length *len* using opened class member *socket_*.
- */
 void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
 {
     int res = 0;
@@ -357,7 +299,6 @@ void IrcClient::LogPrettifiedMessage(const std::string &message)
 
     std::string log_message = message;
 
-    // remove trailing \r\n
     size_t pos = message.rfind("\r\n");
     if (pos != std::string::npos)
     {
