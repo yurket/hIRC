@@ -5,6 +5,26 @@
 
 #include <ctime>
 
+namespace
+{
+
+const std::string Delimiter = "\n================================================================================\n";
+const std::string LogBasename = "IrcHistory";
+const std::size_t StrftimeBufferLen = 100;
+
+std::string GetStringFromStrftimeFormat(const std::string& format_string)
+{
+    std::time_t now = std::time(NULL);
+    char formatted_time[StrftimeBufferLen];
+    if(!strftime(formatted_time, sizeof(formatted_time), format_string.c_str(), std::localtime(&now)))
+    {
+        return std::string();
+    }
+    return std::string(formatted_time);
+}
+
+} // namespace
+
 Logger::Logger(const std::string &filename, const std::fstream::openmode mode) :
     logging_enabled_(true)
 {
@@ -27,22 +47,19 @@ void Logger::Log(const std::string &s)
         return;
     }
 
-    std::time_t const now = std::time(NULL);
-    char pretty_time[100];
-    strftime(pretty_time, sizeof(pretty_time), "%T", std::localtime(&now));
-    file_ << pretty_time << ": "  << s << std::endl;
+    const std::string hour_minutes_seconds = GetStringFromStrftimeFormat("%T");
+    file_ << hour_minutes_seconds << ": "  << s << std::endl;
     file_.flush();
 }
 
 void Logger::PrintHeader()
 {
     std::string header;
-    header += "\n\n================================================================================\n";
-    std::time_t now = std::time(NULL);
-    char pretty_time[100];
-    strftime(pretty_time, sizeof(pretty_time), "%c %Z", std::localtime(&now));
-    header += pretty_time;
-    header += "\n================================================================================\n";
+    header += "\n";
+    header += Delimiter;
+    const std::string date_time_timezone = GetStringFromStrftimeFormat("%c %Z");
+    header += date_time_timezone;
+    header += Delimiter;
     Log(header);
 }
 
