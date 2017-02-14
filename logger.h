@@ -8,7 +8,7 @@ class Logger
 {
  public:
     Logger(
-        const std::string &filename,
+        const std::string& filename,
         const std::fstream::openmode mode = std::fstream::app
         );
     ~Logger();
@@ -16,7 +16,7 @@ class Logger
     // because the default definition would be ill-formed
     Logger(const Logger&);
 
-    void Log(const std::string &s);
+    void Log(const std::string& s);
     void PrintHeader();
     void DisableLogging();
     void EnableLogging();

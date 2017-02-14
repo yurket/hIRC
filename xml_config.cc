@@ -5,13 +5,13 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
 
-XmlConfig::XmlConfig(const std::string &filename)
+XmlConfig::XmlConfig(const std::string& filename)
     : filename_(filename)
 {
     load(filename_);
 }
 
-void XmlConfig::load(const std::string &filename)
+void XmlConfig::load(const std::string& filename)
 {
     using boost::property_tree::ptree;
     ptree pt;

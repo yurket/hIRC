@@ -75,7 +75,7 @@ bool IfErrorCommand(const char* recv_buf)
 } // namespace
 
 
-IrcClient::IrcClient(const std::string &config_filename)
+IrcClient::IrcClient(const std::string& config_filename)
     : logger_(Logger("test.log"))
     , config_(XmlConfig(config_filename))
 {
@@ -84,7 +84,7 @@ IrcClient::IrcClient(const std::string &config_filename)
 }
 
 
-void IrcClient::Connect(const std::string &server_ip, const unsigned short server_port)
+void IrcClient::Connect(const std::string& server_ip, const unsigned short server_port)
 {
     int res = 0;
     struct sockaddr_in addr;
@@ -116,7 +116,7 @@ void IrcClient::Connect(const std::string &server_ip, const unsigned short serve
     logger_.Log("Successfully connected");
 }
 
-void IrcClient::Register(const std::string &nick, const std::string &real_name)
+void IrcClient::Register(const std::string& nick, const std::string& real_name)
 {
     std::string send_str;
     bool verbose=true;
@@ -133,7 +133,7 @@ void IrcClient::Register(const std::string &nick, const std::string &real_name)
     logger_.Log("Successfully registered with name " + nick);
 }
 
-void IrcClient::JoinRoom(const std::string &nick, const std::string &room_name)
+void IrcClient::JoinRoom(const std::string& nick, const std::string& room_name)
 {
     // TODO: observe the state of connections to the rooms. With structure
     // like this: {'room': is_connected}
@@ -225,7 +225,7 @@ void IrcClient::Communicate()
     }
 }
 
-void IrcClient::SendPONG(const char *recv_buf)
+void IrcClient::SendPONG(const char* recv_buf)
 {
     assert(recv_buf != NULL);
     if (recv_buf == NULL)
@@ -254,7 +254,7 @@ void IrcClient::SendPONG(const char *recv_buf)
     }
 }
 
-bool IrcClient::IsAutomaticallyHandledMsg(const char *recv_buf)
+bool IrcClient::IsAutomaticallyHandledMsg(const char* recv_buf)
 {
     if (IfPingRequest(recv_buf))
     {
@@ -269,7 +269,7 @@ bool IrcClient::IsAutomaticallyHandledMsg(const char *recv_buf)
     return false;
 }
 
-void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
+void IrcClient::SendOrDie(const std::string& send_str, bool verbose)
 {
     int res = 0;
     res = send(socket_, send_str.c_str(), send_str.length(), kNoFlags);
@@ -286,7 +286,7 @@ void IrcClient::SendOrDie(const std::string &send_str, bool verbose)
     }
 }
 
-void IrcClient::LogPrettifiedMessage(const std::string &message)
+void IrcClient::LogPrettifiedMessage(const std::string& message)
 {
     if (message.empty())
     {

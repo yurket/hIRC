@@ -14,7 +14,7 @@ public:
     ~LibiconvWrapper();
 
     LibiconvWrapper(const LibiconvWrapper &) = delete;
-    LibiconvWrapper & operator = (const LibiconvWrapper &) = delete;
+    LibiconvWrapper& operator= (const LibiconvWrapper &) = delete;
 
     void ConvertBuffer(char* inbuf, const size_t inbuf_size,
                          char* outbuf, const size_t outbuf_size);

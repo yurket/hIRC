@@ -6,8 +6,8 @@
 class XmlConfig
 {
 public:
-    explicit XmlConfig(const std::string &filename);
-    void load(const std::string &filename);
+    explicit XmlConfig(const std::string& filename);
+    void load(const std::string& filename);
     void print_config() const;
 
     std::string nick() const;

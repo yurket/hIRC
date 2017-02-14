@@ -21,6 +21,7 @@ int main()
         }
         catch (const std::exception& e)
         {
+            std::cerr << "Exception occured: " << e.what() << std::endl;
             continue;
         }
     }

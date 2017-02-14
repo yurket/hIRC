@@ -12,12 +12,12 @@ namespace
 class LibiconvWrapperException : public std::exception
 {
 public:
-    LibiconvWrapperException(std::string const msg) :
+    explicit LibiconvWrapperException(const std::string& msg) :
         msg_(msg)
     {
     }
 
-    const char* what() const throw()
+    const char* what() const noexcept
     {
         return msg_.c_str();
     }

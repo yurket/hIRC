@@ -25,7 +25,7 @@ std::string GetStringFromStrftimeFormat(const std::string& format_string)
 
 } // namespace
 
-Logger::Logger(const std::string &filename, const std::fstream::openmode mode) :
+Logger::Logger(const std::string& filename, const std::fstream::openmode mode) :
     logging_enabled_(true)
 {
     file_.open(filename.c_str(), mode);
@@ -40,7 +40,7 @@ Logger::~Logger()
     }
 }
 
-void Logger::Log(const std::string &s)
+void Logger::Log(const std::string& s)
 {
     if (!logging_enabled_)
     {

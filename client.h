@@ -16,15 +16,15 @@ const std::size_t kUnicodePoinMaxSize = 6;
 class IrcClient
 {
 public:
-    explicit IrcClient(const std::string &config_name);
+    explicit IrcClient(const std::string& config_name);
 
     // forbid CC
     IrcClient(const IrcClient&) = delete;
     IrcClient& operator=(const IrcClient&) = delete;
 
-    void Register(const std::string &nick, const std::string &real_name);
-    void Connect(const std::string &server_ip, const unsigned short server_port = 6667);
-    void JoinRoom(const std::string &nick, const std::string &room_name);
+    void Register(const std::string& nick, const std::string& real_name);
+    void Connect(const std::string& server_ip, const unsigned short server_port = 6667);
+    void JoinRoom(const std::string& nick, const std::string& room_name);
     void Communicate();
     void Disconnect();
 
@@ -34,10 +34,10 @@ private:
     static const std::size_t kNoFlags = 0;
     static constexpr std::size_t kIconvBufLen = kRecvBufLen * kUnicodePoinMaxSize;
 
-    bool IsAutomaticallyHandledMsg(const char *in_buf);
-    void SendPONG(const char *recv_buf);
-    void SendOrDie(const std::string &send_str, bool verbose=false);
-    void LogPrettifiedMessage(const std::string &message);
+    bool IsAutomaticallyHandledMsg(const char* in_buf);
+    void SendPONG(const char* recv_buf);
+    void SendOrDie(const std::string& send_str, bool verbose=false);
+    void LogPrettifiedMessage(const std::string& message);
 
     int socket_;
     Logger logger_;
