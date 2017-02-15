@@ -28,16 +28,30 @@ std::string GetStringFromStrftimeFormat(const std::string& format_string)
 Logger::Logger(const std::string& filename, const std::fstream::openmode mode) :
     logging_enabled_(true)
 {
-    file_.open(filename.c_str(), mode);
+    file_stream_.open(filename.c_str(), mode);
     PrintHeader();
 }
 
 Logger::~Logger()
 {
-    if (file_.is_open())
+    if (file_stream_.is_open())
     {
-        file_.close();
+        file_stream_.close();
     }
+}
+
+Logger::Logger(Logger&& other) :
+    logging_enabled_(other.logging_enabled_)
+{
+    std::swap(file_stream_, other.file_stream_);
+}
+
+Logger& Logger::operator= (Logger&& rhs)
+{
+    std::swap(file_stream_, rhs.file_stream_);
+    logging_enabled_ = rhs.logging_enabled_;
+
+    return *this;
 }
 
 void Logger::Log(const std::string& s)
@@ -48,8 +62,8 @@ void Logger::Log(const std::string& s)
     }
 
     const std::string hour_minutes_seconds = GetStringFromStrftimeFormat("%T");
-    file_ << hour_minutes_seconds << ": "  << s << std::endl;
-    file_.flush();
+    file_stream_ << hour_minutes_seconds << ": "  << s << std::endl;
+    file_stream_.flush();
 }
 
 void Logger::PrintHeader()
