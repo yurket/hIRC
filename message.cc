@@ -1,8 +1,9 @@
 #include "message.h"
 
+#include <iomanip>
 #include <iostream>
 #include <regex>
-#include <iomanip>
+#include <sstream>
 
 namespace
 {
@@ -91,7 +92,7 @@ Message::CommandType Message::StringToCommand(const std::string& command) const
     {
         return CommandType::QUIT;
     }
-    std::cerr << "Can't match command!" << std::endl;
+    std::cerr << "Unknown command \"" << command << "\""<< std::endl;
     return CommandType::Unknown;
 }
 
