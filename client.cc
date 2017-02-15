@@ -76,7 +76,8 @@ bool IfErrorCommand(const char* recv_buf)
 
 
 IrcClient::IrcClient(const std::string& config_filename)
-    : logger_(Logger("test.log"))
+    : socket_(-1)
+    , logger_(Logger("irc_history.log"))
     , config_(XmlConfig(config_filename))
 {
     // disable logging for not to log  greeting messages from IRC server
