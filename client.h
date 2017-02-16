@@ -16,7 +16,8 @@ const std::size_t kUnicodePoinMaxSize = 6;
 class IrcClient
 {
 public:
-    explicit IrcClient(const std::string& config_name);
+    explicit IrcClient(XmlConfig xml_config);
+    ~IrcClient();
 
     // forbid CC
     IrcClient(const IrcClient&) = delete;

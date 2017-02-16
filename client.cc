@@ -9,10 +9,10 @@
 #include <poll.h>
 #include <unistd.h>
 
-#include <iostream>
 #include <cassert>
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 #include <stdexcept>
 #include <vector>
 
@@ -75,15 +75,22 @@ bool IfErrorCommand(const char* recv_buf)
 } // namespace
 
 
-IrcClient::IrcClient(const std::string& config_filename)
+IrcClient::IrcClient(XmlConfig xml_config)
     : socket_(-1)
     , logger_(Logger("irc_history.log"))
-    , config_(XmlConfig(config_filename))
+    , config_(std::move(xml_config))
 {
     // disable logging for not to log  greeting messages from IRC server
     logger_.DisableLogging();
 }
 
+IrcClient::~IrcClient()
+{
+    if (socket_ != -1)
+    {
+        close(socket_);
+    }
+}
 
 void IrcClient::Connect(const std::string& server_ip, const unsigned short server_port)
 {

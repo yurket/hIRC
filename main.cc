@@ -10,7 +10,7 @@ int main()
 
     while(true)
     {
-        IrcClient client("bynets.xml");
+        IrcClient client(config);
         std::cerr << std::endl << std::endl;
 
         client.Connect(config.server_ip(), config.server_port());
