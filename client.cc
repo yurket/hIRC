@@ -12,12 +12,16 @@
 #include <cassert>
 #include <cstdio>
 #include <cstring>
+#include <exception>
 #include <iostream>
 #include <stdexcept>
 #include <vector>
 
 namespace
 {
+
+const int kRecvConnectionClosedByPeer = 0;
+
 
 // TODO: write tests!
 std::vector<std::string> SplitOnLines(char const* text_of_chars)
@@ -72,6 +76,14 @@ bool IfErrorCommand(const char* recv_buf)
     return false;
 }
 
+void CloseVerbose(int fd)
+{
+    if (close(fd) == -1)
+    {
+        perror("close error");
+    }
+}
+
 } // namespace
 
 
@@ -88,12 +100,15 @@ IrcClient::~IrcClient()
 {
     if (socket_ != -1)
     {
-        close(socket_);
+        CloseVerbose(socket_);
     }
 }
 
 void IrcClient::Connect(const std::string& server_ip, const unsigned short server_port)
 {
+    logger_.Log("[D] Trying to connect to server " + server_ip);
+    std::cerr << "[D] Trying to connect to server " << server_ip << ":" << server_port << std::endl;
+
     int res = 0;
     struct sockaddr_in addr;
 
@@ -101,7 +116,7 @@ void IrcClient::Connect(const std::string& server_ip, const unsigned short serve
     if (socket_ == -1)
     {
         perror("Can't create socket");
-        _exit(1);
+        throw std::runtime_error("socket error");
     }
 
     addr.sin_family = AF_INET;
@@ -110,16 +125,14 @@ void IrcClient::Connect(const std::string& server_ip, const unsigned short serve
     if (res != 1)
     {
         perror("inet_aton error");
-        close(socket_);
-        _exit(1);
+        throw std::runtime_error("inet_aton error");
     }
 
     res = connect(socket_, (const struct sockaddr *)&addr, sizeof(addr));
     if (res == -1)
     {
         perror("connect error");
-        close(socket_);
-        _exit(1);
+        throw std::runtime_error("connect error");
     }
     logger_.Log("Successfully connected");
 }
@@ -192,8 +205,13 @@ void IrcClient::Communicate()
                 perror("recv failed!");
                 logger_.Log("recv failed!");
 
-                close(socket_);
-                _exit(1);
+                throw std::runtime_error("recv error");
+            }
+            else if (res == kRecvConnectionClosedByPeer)
+            {
+                logger_.Log("[D] Peer closed the connection? Will try to reconnect");
+                std::cerr << "Peer closed the connection? Will try to reconnect" << std::endl;
+                return;
             }
 
             converter.ConvertBuffer(recv_buf, kRecvBufLen, iconv_buf, kIconvBufLen);
@@ -227,8 +245,7 @@ void IrcClient::Communicate()
             perror("poll failed!");
             logger_.Log("poll failed!");
 
-            close(socket_);
-            _exit(1);
+            throw std::runtime_error("poll error");
         }
     }
 }
@@ -285,8 +302,7 @@ void IrcClient::SendOrDie(const std::string& send_str, bool verbose)
     {
         perror("send failed!");
 
-        close(socket_);
-        _exit(1);
+        throw std::runtime_error("send error");
     }
     else if(verbose)
     {
