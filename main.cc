@@ -26,7 +26,7 @@ int main()
         {
             std::cerr << "Exception occured: " << e.what() << std::endl;
 
-            std::chrono::seconds const sleep_seconds(10);
+            std::chrono::seconds const sleep_seconds(30);
             std::cerr << "Will sleep for " << sleep_seconds.count() << " seconds before reconnecting" << std:: endl;
             std::this_thread::sleep_for(sleep_seconds);
 
