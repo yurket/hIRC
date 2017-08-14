@@ -33,5 +33,6 @@ int main()
             continue;
         }
     }
+    std::cerr << "Going to exit now" << std::endl;
     return 0;
 }

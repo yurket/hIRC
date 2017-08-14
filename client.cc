@@ -13,7 +13,6 @@
 #include <cstdio>
 #include <cstring>
 #include <exception>
-#include <iostream>
 #include <stdexcept>
 #include <vector>
 
@@ -89,10 +88,11 @@ void CloseVerbose(int fd)
 
 IrcClient::IrcClient(XmlConfig xml_config)
     : socket_(-1)
-    , logger_(Logger("irc_history.log"))
+    , messages_logger_("history.txt")
+    , logger_("log.txt")
     , config_(std::move(xml_config))
 {
-    // disable logging for not to log  greeting messages from IRC server
+    // disable logging for not to log greeting messages from IRC server
     logger_.DisableLogging();
 }
 
@@ -106,8 +106,7 @@ IrcClient::~IrcClient()
 
 void IrcClient::Connect(const std::string& server_ip, const unsigned short server_port)
 {
-    logger_.Log("[D] Trying to connect to server " + server_ip);
-    std::cerr << "[D] Trying to connect to server " << server_ip << ":" << server_port << std::endl;
+    logger_.Log("Trying to connect to server " + server_ip);
 
     int res = 0;
     struct sockaddr_in addr;
@@ -139,17 +138,14 @@ void IrcClient::Connect(const std::string& server_ip, const unsigned short serve
 
 void IrcClient::Register(const std::string& nick, const std::string& real_name)
 {
-    std::string send_str;
-    bool verbose=true;
-
-    send_str = "PASS 12345\r\n";
-    SendOrDie(send_str, verbose);
+    std::string send_str = "PASS 12345\r\n";
+    SendOrDie(send_str);
 
     send_str = "NICK " + nick + "\r\n";
-    SendOrDie(send_str, verbose);
+    SendOrDie(send_str);
 
     send_str = "USER " + nick + " 0 * :" + real_name + "\r\n";
-    SendOrDie(send_str, verbose);
+    SendOrDie(send_str);
 
     logger_.Log("Successfully registered with name " + nick);
 }
@@ -160,15 +156,12 @@ void IrcClient::JoinRoom(const std::string& nick, const std::string& room_name)
     // like this: {'room': is_connected}
 
     // To join string like ":lite5 JOIN #test_room_name" should be sent
-    std::string send_str;
-    bool verbose = true;
-
-    send_str = ":" + nick + " JOIN " + room_name + "\r\n";
-    SendOrDie(send_str, verbose);
+    std::string send_str = ":" + nick + " JOIN " + room_name + "\r\n";
+    SendOrDie(send_str);
 
     // after joining to the room start logging users' messages
     logger_.EnableLogging();
-    logger_.Log("[+] Successfully joined to " + room_name);
+    logger_.Log("Successfully joined to " + room_name);
 }
 
 void IrcClient::Communicate()
@@ -209,15 +202,13 @@ void IrcClient::Communicate()
             }
             else if (res == kRecvConnectionClosedByPeer)
             {
-                logger_.Log("[D] Peer closed the connection? Will try to reconnect");
-                std::cerr << "Peer closed the connection? Will try to reconnect" << std::endl;
+                logger_.Log("Peer closed the connection? Will try to reconnect");
                 return;
             }
 
             converter.ConvertBuffer(recv_buf, kRecvBufLen, iconv_buf, kIconvBufLen);
 
-            std::cerr << "received: " << std::endl;
-            std::cerr << iconv_buf << std::endl;
+            logger_.Log("received: \"" + std::string(iconv_buf) + "\"");
 
             std::vector<std::string> const messages = SplitOnLines(iconv_buf);
             for (const auto& msg : messages)
@@ -257,7 +248,7 @@ void IrcClient::SendPONG(const char* recv_buf)
     {
         return;
     }
-    std::cerr << "[D] got PING: " << std::endl << recv_buf << std::endl;
+    logger_.Log("got PING: \"" + std::string(recv_buf) + "\"");
     const std::string kPongString = std::string("PONG");
 
     std::string received_str = std::string(recv_buf);
@@ -269,8 +260,7 @@ void IrcClient::SendPONG(const char* recv_buf)
         // msg is smth like ":77E488E"
         std::string msg = received_str.substr(pos);
         pong_msg += msg;
-        std::cerr << "[D] Sending PONG msg: " << pong_msg << std::endl;
-        SendOrDie(pong_msg, true);
+        SendOrDie(pong_msg);
     }
     else
     {
@@ -294,7 +284,7 @@ bool IrcClient::IsAutomaticallyHandledMsg(const char* recv_buf)
     return false;
 }
 
-void IrcClient::SendOrDie(const std::string& send_str, bool verbose)
+void IrcClient::SendOrDie(const std::string& send_str)
 {
     int res = 0;
     res = send(socket_, send_str.c_str(), send_str.length(), kNoFlags);
@@ -304,30 +294,20 @@ void IrcClient::SendOrDie(const std::string& send_str, bool verbose)
 
         throw std::runtime_error("send error");
     }
-    else if(verbose)
-    {
-        std::cerr << "SendOrDie(): '" << send_str << "' successfully sent" << std::endl;
-    }
+
+    logger_.Log("Successfully sent \"" + send_str + "\"");
 }
 
 void IrcClient::LogPrettifiedMessage(const std::string& message)
 {
-    if (message.empty())
-    {
-        logger_.Log("[!] empty message");
-    }
-    if (message.find("PING :") != std::string::npos)
-    {
-        return;
-    }
+    assert(!message.empty());
 
     std::string log_message = message;
-
     size_t pos = message.rfind("\r\n");
     if (pos != std::string::npos)
     {
         log_message = message.substr(0, pos);
     }
 
-    logger_.Log(log_message);
+    messages_logger_.Log(log_message);
 }

@@ -9,7 +9,6 @@ namespace
 {
 
 const std::string Delimiter = "\n================================================================================\n";
-const std::string LogBasename = "IrcHistory";
 const std::size_t StrftimeBufferLen = 100;
 
 std::string GetStringFromStrftimeFormat(const std::string& format_string)
