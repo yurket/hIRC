@@ -38,7 +38,6 @@ private:
     bool IsAutomaticallyHandledMsg(const char* in_buf);
     void SendPONG(const char* recv_buf);
     void SendOrDie(const std::string& send_str);
-    void LogPrettifiedMessage(const std::string& message);
 
     int socket_;
     Logger messages_logger_;

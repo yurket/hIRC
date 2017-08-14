@@ -83,6 +83,17 @@ void CloseVerbose(int fd)
     }
 }
 
+std::string RemoveTrailingCRLF(const std::string& s)
+{
+    size_t pos = s.rfind("\r\n");
+    if (pos != std::string::npos)
+    {
+        return s.substr(0, pos);
+    }
+
+    return s;
+}
+
 } // namespace
 
 
@@ -208,7 +219,7 @@ void IrcClient::Communicate()
 
             converter.ConvertBuffer(recv_buf, kRecvBufLen, iconv_buf, kIconvBufLen);
 
-            logger_.Log("received: \"" + std::string(iconv_buf) + "\"");
+            logger_.Log("received: \"" + RemoveTrailingCRLF(std::string(iconv_buf)) + "\"");
 
             std::vector<std::string> const messages = SplitOnLines(iconv_buf);
             for (const auto& msg : messages)
@@ -219,7 +230,7 @@ void IrcClient::Communicate()
                 }
 
                 Message message(msg);
-                LogPrettifiedMessage(message.GetStringForLogging());
+                messages_logger_.Log(RemoveTrailingCRLF(message.GetStringForLogging()));
             }
         }
         else if (ready == 0)
@@ -248,7 +259,6 @@ void IrcClient::SendPONG(const char* recv_buf)
     {
         return;
     }
-    logger_.Log("got PING: \"" + std::string(recv_buf) + "\"");
     const std::string kPongString = std::string("PONG");
 
     std::string received_str = std::string(recv_buf);
@@ -295,19 +305,5 @@ void IrcClient::SendOrDie(const std::string& send_str)
         throw std::runtime_error("send error");
     }
 
-    logger_.Log("Successfully sent \"" + send_str + "\"");
-}
-
-void IrcClient::LogPrettifiedMessage(const std::string& message)
-{
-    assert(!message.empty());
-
-    std::string log_message = message;
-    size_t pos = message.rfind("\r\n");
-    if (pos != std::string::npos)
-    {
-        log_message = message.substr(0, pos);
-    }
-
-    messages_logger_.Log(log_message);
+    logger_.Log("Successfully sent \"" + RemoveTrailingCRLF(send_str) + "\"");
 }
