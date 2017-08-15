@@ -104,7 +104,7 @@ IrcClient::IrcClient(XmlConfig xml_config)
     , config_(std::move(xml_config))
 {
     // disable logging for not to log greeting messages from IRC server
-    logger_.DisableLogging();
+    messages_logger_.DisableLogging();
 }
 
 IrcClient::~IrcClient()
@@ -171,7 +171,7 @@ void IrcClient::JoinRoom(const std::string& nick, const std::string& room_name)
     SendOrDie(send_str);
 
     // after joining to the room start logging users' messages
-    logger_.EnableLogging();
+    messages_logger_.EnableLogging();
     logger_.Log("Successfully joined to " + room_name);
 }
 

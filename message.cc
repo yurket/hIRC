@@ -54,7 +54,6 @@ std::string Message::GetStringForLogging()
 
 std::string Message::GetPrettyJoinMessage()
 {
-
     const std::string nick = GetFirstSubmatch(message_, NickRegex);
 
     return GetColoredNick(nick) + GetColoredString(" joined the room", SystemGreyColor);
