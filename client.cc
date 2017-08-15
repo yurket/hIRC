@@ -99,8 +99,8 @@ std::string RemoveTrailingCRLF(const std::string& s)
 
 IrcClient::IrcClient(XmlConfig xml_config)
     : socket_(-1)
-    , messages_logger_("history.txt")
-    , logger_("log.txt")
+    , messages_logger_(Logger::Get("history"))
+    , logger_(Logger::Get("general"))
     , config_(std::move(xml_config))
 {
     // disable logging for not to log greeting messages from IRC server

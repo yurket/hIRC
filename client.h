@@ -40,8 +40,8 @@ private:
     void SendOrDie(const std::string& send_str);
 
     int socket_;
-    Logger messages_logger_;
-    Logger logger_;
+    Logger& messages_logger_;
+    Logger& logger_;
     XmlConfig config_;
 };
 

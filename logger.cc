@@ -3,10 +3,13 @@
 #include <iostream>
 #include <stdexcept>
 
+#include <cassert>
 #include <ctime>
 
 namespace
 {
+
+RegisteredLoggers registered_loggers;
 
 const std::string Delimiter = "\n================================================================================\n";
 const std::size_t StrftimeBufferLen = 100;
@@ -23,6 +26,34 @@ std::string GetStringFromStrftimeFormat(const std::string& format_string)
 }
 
 } // namespace
+
+bool Logger::Register(const std::string& logger_name, const std::string& log_filename)
+{
+    assert(!logger_name.empty());
+    assert(!log_filename.empty());
+
+    if (registered_loggers.find(logger_name) != registered_loggers.end())
+    {
+        std::cerr << "Logger with name \"" << logger_name << "\" already registered." << std::endl;
+        return false;
+    }
+
+    registered_loggers[logger_name] = std::make_unique<Logger>(log_filename);
+    return true;
+}
+
+Logger& Logger::Get(const std::string& logger_name)
+{
+    assert(!logger_name.empty());
+
+    auto it = registered_loggers.find(logger_name);
+    if (it == registered_loggers.end())
+    {
+        const std::string m = "Logger with name \"" + logger_name +  "\" is not registered.";
+        throw std::runtime_error(m);
+    }
+    return *(it->second);
+}
 
 Logger::Logger(const std::string& filename, const std::fstream::openmode mode) :
     logging_enabled_(true)

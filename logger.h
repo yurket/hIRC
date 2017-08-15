@@ -2,11 +2,18 @@
 #define LOGGER_H_
 
 #include <fstream>
+#include <map>
+#include <memory>
 #include <string>
+
 
 class Logger
 {
- public:
+public:
+    static bool Register(const std::string& logger_name, const std::string& log_filename);
+    static Logger& Get(const std::string& logger_name);
+
+public:
     Logger(
         const std::string& filename,
         const std::fstream::openmode mode = std::fstream::app
@@ -19,7 +26,6 @@ class Logger
     Logger(Logger&& other);
     Logger& operator= (Logger&& rhs);
 
-
     void Log(const std::string& s);
     void PrintHeader();
     void DisableLogging();
@@ -30,5 +36,6 @@ private:
     bool logging_enabled_;
 };
 
+using RegisteredLoggers = std::map<std::string, std::unique_ptr<Logger>>;
 
 #endif // LOGGER_H_
