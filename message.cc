@@ -1,7 +1,7 @@
 #include "message.h"
+#include "logger.h"
 
 #include <iomanip>
-#include <iostream>
 #include <regex>
 #include <sstream>
 
@@ -31,6 +31,7 @@ std::string GetColoredString(const std::string& s, const std::string& hexColor)
 
 
 Message::Message(const std::string& message) :
+    logger_(Logger::Get("general")),
     message_(message),
     command_(GetCommandFromMessageString(message))
 {
@@ -92,7 +93,8 @@ Message::CommandType Message::StringToCommand(const std::string& command) const
     {
         return CommandType::QUIT;
     }
-    std::cerr << "Unknown command \"" << command << "\""<< std::endl;
+
+    logger_.Log("Unknown command \"" + command + "\"");
     return CommandType::Unknown;
 }
 
