@@ -1,10 +1,9 @@
 #include "logger.h"
 
-#include <iostream>
-#include <stdexcept>
-
 #include <cassert>
 #include <ctime>
+#include <iostream>
+#include <stdexcept>
 
 namespace
 {

@@ -1,12 +1,12 @@
 #include "libiconv_wrapper.h"
 
 #include "logger.h"
+#include "utils.h"
+
+#include <errno.h>
 
 #include <cstring>
 #include <exception>
-#include <iostream>
-
-#include <errno.h>
 
 namespace
 {
@@ -87,30 +87,15 @@ void LibiconvWrapper::ConvertBuffer(char* inbuf, const size_t inbuf_size,
     res = iconv(conversion_descriptor_, inbuf1, &inbuf_size_, outbuf1, &outbuf_size_);
     if (res == (size_t)-1)
     {
-        perror("iconv error");
-        std::cerr << "inbuf_size: " << inbuf_size_ << ", outbuf_size: " << outbuf_size_ << std::endl;
+        std::string error_message = "iconv error: " + std::string(strerror(errno));
+        error_message += "inbuf_size: " + Util::ToString(inbuf_size_) +
+            ", outbuf_size: " + Util::ToString(outbuf_size_);
+        logger_.Log(error_message);
 
         // TODO: ugly string formatting
         throw LibiconvWrapperException("iconv error: input encoding: " + fromcode_ \
                                        + ", output encoding: " + tocode_);
     }
 
-    // debug
-    if (0)
-    {
-        std::cout << "bytes converted: " << res << std::endl;
-        std::cout << "outbuf: " << outbuf1 << " inleft: " << inbuf_size \
-                  << " outleft: " << outbuf_size << std::endl;
-    }
     ResetConversionDescriptor();
 }
-
-
-// TODO: add simple tests for some encoding coverstations?
-
-// int main()
-// {
-//     LibiconvWrapper converter("UTF-8", "CP1251");
-//     // converter.ConvertCP(NULL, NULL, NULL, NULL);
-//     return 0;
-// }
