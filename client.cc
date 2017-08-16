@@ -10,7 +10,6 @@
 #include <unistd.h>
 
 #include <cassert>
-#include <cstdio>
 #include <cstring>
 #include <exception>
 #include <stdexcept>
@@ -75,14 +74,6 @@ bool IfErrorCommand(const char* recv_buf)
     return false;
 }
 
-void CloseVerbose(int fd)
-{
-    if (close(fd) == -1)
-    {
-        perror("close error");
-    }
-}
-
 std::string RemoveTrailingCRLF(const std::string& s)
 {
     size_t pos = s.rfind("\r\n");
@@ -111,7 +102,10 @@ IrcClient::~IrcClient()
 {
     if (socket_ != -1)
     {
-        CloseVerbose(socket_);
+        if (close(socket_) == -1)
+        {
+            logger_.Log("socket close error: " + std::string(strerror(errno)));
+        }
     }
 }
 
@@ -125,8 +119,9 @@ void IrcClient::Connect(const std::string& server_ip, const unsigned short serve
     socket_ = socket(AF_INET, SOCK_STREAM, kNoFlags);
     if (socket_ == -1)
     {
-        perror("Can't create socket");
-        throw std::runtime_error("socket error");
+        const std::string error_message = "Can't create socket: " + std::string(strerror(errno));
+        logger_.Log(error_message);
+        throw std::runtime_error(error_message);
     }
 
     addr.sin_family = AF_INET;
@@ -134,15 +129,17 @@ void IrcClient::Connect(const std::string& server_ip, const unsigned short serve
     res = inet_aton(server_ip.c_str(), &addr.sin_addr);
     if (res != 1)
     {
-        perror("inet_aton error");
-        throw std::runtime_error("inet_aton error");
+        const std::string error_message = "inet_aton error: " + std::string(strerror(errno));
+        logger_.Log(error_message);
+        throw std::runtime_error(error_message);
     }
 
     res = connect(socket_, (const struct sockaddr *)&addr, sizeof(addr));
     if (res == -1)
     {
-        perror("connect error");
-        throw std::runtime_error("connect error");
+        const std::string error_message = "connect error: " + std::string(strerror(errno));
+        logger_.Log(error_message);
+        throw std::runtime_error(error_message);
     }
     logger_.Log("Successfully connected");
 }
@@ -206,9 +203,7 @@ void IrcClient::Communicate()
             res = recv(socket_, recv_buf, sizeof(recv_buf)-1, kNoFlags);
             if (res == -1)
             {
-                perror("recv failed!");
-                logger_.Log("recv failed!");
-
+                logger_.Log("recv failed!" + std::string(strerror(errno)));
                 throw std::runtime_error("recv error");
             }
             else if (res == kRecvConnectionClosedByPeer)
@@ -244,9 +239,7 @@ void IrcClient::Communicate()
         }
         else if (ready == -1)
         {
-            perror("poll failed!");
-            logger_.Log("poll failed!");
-
+            logger_.Log("poll failed!" + std::string(strerror(errno)));
             throw std::runtime_error("poll error");
         }
     }
@@ -265,18 +258,16 @@ void IrcClient::SendPONG(const char* recv_buf)
     size_t pos = received_str.find(":");
 
     std::string pong_msg = kPongString + " " + config_.nick() + " ";
-    if (pos != std::string::npos)
+    if (pos == std::string::npos)
     {
-        // msg is smth like ":77E488E"
-        std::string msg = received_str.substr(pos);
-        pong_msg += msg;
-        SendOrDie(pong_msg);
-    }
-    else
-    {
-        perror("SendPONG() error!");
+        logger_.Log("SendPONG() error: malformed PING?");
         return;
     }
+
+    // msg is smth like ":77E488E"
+    std::string msg = received_str.substr(pos);
+    pong_msg += msg;
+    SendOrDie(pong_msg);
 }
 
 bool IrcClient::IsAutomaticallyHandledMsg(const char* recv_buf)
@@ -300,9 +291,9 @@ void IrcClient::SendOrDie(const std::string& send_str)
     res = send(socket_, send_str.c_str(), send_str.length(), kNoFlags);
     if (res == -1)
     {
-        perror("send failed!");
-
-        throw std::runtime_error("send error");
+        const std::string error_message = "send error: " + std::string(strerror(errno));
+        logger_.Log(error_message);
+        throw std::runtime_error(error_message);
     }
 
     logger_.Log("Successfully sent \"" + RemoveTrailingCRLF(send_str) + "\"");
