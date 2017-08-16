@@ -1,23 +1,11 @@
 #include "client.h"
 #include "logger.h"
+#include "utils.h"
 #include "xml_config.h"
 
 #include <chrono>
 #include <iostream>
-#include <sstream>
 #include <thread>
-
-namespace
-{
-
-std::string ToString(const long int li)
-{
-    std::stringstream ss;
-    ss << li;
-    return ss.str();
-}
-
-} // namespace
 
 void InitLogging()
 {
@@ -57,7 +45,7 @@ int main()
             logger.Log("Exception occured: " + std::string(e.what()));
 
             std::chrono::seconds const sleep_seconds(30);
-            logger.Log("Will sleep for " + ToString(sleep_seconds.count()) + " seconds before reconnecting");
+            logger.Log("Will sleep for " + Util::ToString(sleep_seconds.count()) + " seconds before reconnecting");
             std::this_thread::sleep_for(sleep_seconds);
 
             continue;

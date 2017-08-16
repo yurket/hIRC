@@ -15,6 +15,7 @@ add_executable(ircHistoryBot
   libiconv_wrapper.cc
   logger.cc
   message.cc
+  utils.cc
   xml_config.cc)
 
 target_link_libraries(ircHistoryBot ${Boost_LIBRARIES})
