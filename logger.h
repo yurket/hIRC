@@ -4,6 +4,7 @@
 #include <fstream>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <string>
 
 
@@ -32,6 +33,7 @@ public:
     void EnableLogging();
 
 private:
+    std::mutex mutex_;
     std::ofstream file_stream_;
     bool logging_enabled_;
 };

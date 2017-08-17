@@ -9,6 +9,7 @@ namespace
 {
 
 RegisteredLoggers registered_loggers;
+std::mutex registered_loggers_mutex;
 
 const std::string Delimiter = "\n================================================================================\n";
 const std::size_t StrftimeBufferLen = 100;
@@ -37,6 +38,7 @@ bool Logger::Register(const std::string& logger_name, const std::string& log_fil
         return false;
     }
 
+    std::lock_guard<std::mutex> lock(registered_loggers_mutex);
     registered_loggers[logger_name] = std::make_unique<Logger>(log_filename);
     return true;
 }
@@ -85,6 +87,8 @@ Logger& Logger::operator= (Logger&& rhs)
 
 void Logger::Log(const std::string& s)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     if (!logging_enabled_)
     {
         return;
