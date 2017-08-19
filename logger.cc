@@ -94,7 +94,7 @@ void Logger::Log(const std::string& s)
         return;
     }
 
-    const std::string hour_minutes_seconds = GetStringFromStrftimeFormat("%T");
+    const std::string hour_minutes_seconds = GetStringFromStrftimeFormat("%F %T");
     file_stream_ << hour_minutes_seconds << ": "  << s << std::endl;
     file_stream_.flush();
 }
