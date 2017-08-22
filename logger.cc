@@ -99,6 +99,23 @@ void Logger::Log(const std::string& s)
     file_stream_.flush();
 }
 
+void Logger::Log(const char* format_string)
+{
+    assert(format_string != nullptr);
+
+    const char* s = format_string;
+    while (*s)
+    {
+        if (*s == '%' && *++s != '%')
+        {
+            throw std::runtime_error("No arguments were passed with format string \""
+                                     + std::string(format_string) + "\"");
+        }
+        file_stream_ << *s++;
+    }
+    file_stream_.flush();
+}
+
 void Logger::PrintHeader()
 {
     std::string header;
