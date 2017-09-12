@@ -1,0 +1,26 @@
+sudo: false
+
+language: cpp
+
+cache:
+  apt: true
+
+compiler:
+  - g++
+  - clang
+
+addons:
+  apt:
+    sources:
+     - boost-latest
+     - ubuntu-toolchain-r-test
+    packages:
+      - libboost-all-dev
+      - cmake
+      - g++-5
+      - clang
+
+install:
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-5"; fi
+
+script: mkdir build && cd build && cmake .. && make && cd ..
