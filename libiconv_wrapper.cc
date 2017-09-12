@@ -1,10 +1,12 @@
 #include "libiconv_wrapper.h"
 
-#include <cstdio>   // perror
+#include "logger.h"
+#include "utils.h"
 
+#include <errno.h>
+
+#include <cstring>
 #include <exception>
-#include <iostream>
-
 
 namespace
 {
@@ -30,20 +32,23 @@ private:
 
 
 LibiconvWrapper::LibiconvWrapper() :
+    logger_(Logger::Get("general")),
     fromcode_(),
     tocode_()
 {
 }
 
 LibiconvWrapper::LibiconvWrapper(const std::string& fromcode, const std::string& tocode) :
+    logger_(Logger::Get("general")),
     fromcode_(fromcode),
     tocode_(tocode)
 {
     conversion_descriptor_ = iconv_open(tocode.c_str(), fromcode.c_str());
     if (conversion_descriptor_ == (iconv_t)(-1))
     {
-        perror("iconv_open");
-        throw LibiconvWrapperException("iconv_open error");
+        const std::string error_message = "iconv_open error: " + std::string(strerror(errno));
+        logger_.Log(error_message);
+        throw LibiconvWrapperException(error_message);
     }
 }
 
@@ -51,8 +56,9 @@ LibiconvWrapper::~LibiconvWrapper()
 {
     if (iconv_close(conversion_descriptor_) == -1)
     {
-        perror("iconv_close");
-        throw LibiconvWrapperException("iconv_close error");
+        const std::string error_message = "iconv_close error: " + std::string(strerror(errno));
+        logger_.Log(error_message);
+        throw LibiconvWrapperException(error_message);
     }
 }
 
@@ -62,10 +68,10 @@ void LibiconvWrapper::ResetConversionDescriptor()
     res = iconv(conversion_descriptor_, NULL, NULL, NULL, NULL);
     if (res == (size_t)-1)
     {
-        perror("iconv reset");
-        throw LibiconvWrapperException("iconv_reset error");
+        const std::string error_message = "iconv error: " + std::string(strerror(errno));
+        logger_.Log(error_message);
+        throw LibiconvWrapperException(error_message);
     }
-
 }
 
 void LibiconvWrapper::ConvertBuffer(char* inbuf, const size_t inbuf_size,
@@ -81,30 +87,15 @@ void LibiconvWrapper::ConvertBuffer(char* inbuf, const size_t inbuf_size,
     res = iconv(conversion_descriptor_, inbuf1, &inbuf_size_, outbuf1, &outbuf_size_);
     if (res == (size_t)-1)
     {
-        perror("iconv error");
-        std::cerr << "inbuf_size: " << inbuf_size_ << ", outbuf_size: " << outbuf_size_ << std::endl;
+        std::string error_message = "iconv error: " + std::string(strerror(errno));
+        error_message += "inbuf_size: " + Util::ToString(inbuf_size_) +
+            ", outbuf_size: " + Util::ToString(outbuf_size_);
+        logger_.Log(error_message);
 
         // TODO: ugly string formatting
         throw LibiconvWrapperException("iconv error: input encoding: " + fromcode_ \
                                        + ", output encoding: " + tocode_);
     }
 
-    // debug
-    if (0)
-    {
-        std::cout << "bytes converted: " << res << std::endl;
-        std::cout << "outbuf: " << outbuf1 << " inleft: " << inbuf_size \
-                  << " outleft: " << outbuf_size << std::endl;
-    }
     ResetConversionDescriptor();
 }
-
-
-// TODO: add simple tests for some encoding coverstations?
-
-// int main()
-// {
-//     LibiconvWrapper converter("UTF-8", "CP1251");
-//     // converter.ConvertCP(NULL, NULL, NULL, NULL);
-//     return 0;
-// }

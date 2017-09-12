@@ -10,10 +10,8 @@
 #include <unistd.h>
 
 #include <cassert>
-#include <cstdio>
 #include <cstring>
 #include <exception>
-#include <iostream>
 #include <stdexcept>
 #include <vector>
 
@@ -76,12 +74,15 @@ bool IfErrorCommand(const char* recv_buf)
     return false;
 }
 
-void CloseVerbose(int fd)
+std::string RemoveTrailingCRLF(const std::string& s)
 {
-    if (close(fd) == -1)
+    size_t pos = s.rfind("\r\n");
+    if (pos != std::string::npos)
     {
-        perror("close error");
+        return s.substr(0, pos);
     }
+
+    return s;
 }
 
 } // namespace
@@ -89,25 +90,28 @@ void CloseVerbose(int fd)
 
 IrcClient::IrcClient(XmlConfig xml_config)
     : socket_(-1)
-    , logger_(Logger("irc_history.log"))
+    , messages_logger_(Logger::Get("history"))
+    , logger_(Logger::Get("general"))
     , config_(std::move(xml_config))
 {
-    // disable logging for not to log  greeting messages from IRC server
-    logger_.DisableLogging();
+    // disable logging for not to log greeting messages from IRC server
+    messages_logger_.DisableLogging();
 }
 
 IrcClient::~IrcClient()
 {
     if (socket_ != -1)
     {
-        CloseVerbose(socket_);
+        if (close(socket_) == -1)
+        {
+            logger_.Log("socket close error: " + std::string(strerror(errno)));
+        }
     }
 }
 
 void IrcClient::Connect(const std::string& server_ip, const unsigned short server_port)
 {
-    logger_.Log("[D] Trying to connect to server " + server_ip);
-    std::cerr << "[D] Trying to connect to server " << server_ip << ":" << server_port << std::endl;
+    logger_.Log("Trying to connect to server " + server_ip);
 
     int res = 0;
     struct sockaddr_in addr;
@@ -115,8 +119,9 @@ void IrcClient::Connect(const std::string& server_ip, const unsigned short serve
     socket_ = socket(AF_INET, SOCK_STREAM, kNoFlags);
     if (socket_ == -1)
     {
-        perror("Can't create socket");
-        throw std::runtime_error("socket error");
+        const std::string error_message = "Can't create socket: " + std::string(strerror(errno));
+        logger_.Log(error_message);
+        throw std::runtime_error(error_message);
     }
 
     addr.sin_family = AF_INET;
@@ -124,32 +129,31 @@ void IrcClient::Connect(const std::string& server_ip, const unsigned short serve
     res = inet_aton(server_ip.c_str(), &addr.sin_addr);
     if (res != 1)
     {
-        perror("inet_aton error");
-        throw std::runtime_error("inet_aton error");
+        const std::string error_message = "inet_aton error: " + std::string(strerror(errno));
+        logger_.Log(error_message);
+        throw std::runtime_error(error_message);
     }
 
     res = connect(socket_, (const struct sockaddr *)&addr, sizeof(addr));
     if (res == -1)
     {
-        perror("connect error");
-        throw std::runtime_error("connect error");
+        const std::string error_message = "connect error: " + std::string(strerror(errno));
+        logger_.Log(error_message);
+        throw std::runtime_error(error_message);
     }
     logger_.Log("Successfully connected");
 }
 
 void IrcClient::Register(const std::string& nick, const std::string& real_name)
 {
-    std::string send_str;
-    bool verbose=true;
-
-    send_str = "PASS 12345\r\n";
-    SendOrDie(send_str, verbose);
+    std::string send_str = "PASS 12345\r\n";
+    SendOrDie(send_str);
 
     send_str = "NICK " + nick + "\r\n";
-    SendOrDie(send_str, verbose);
+    SendOrDie(send_str);
 
     send_str = "USER " + nick + " 0 * :" + real_name + "\r\n";
-    SendOrDie(send_str, verbose);
+    SendOrDie(send_str);
 
     logger_.Log("Successfully registered with name " + nick);
 }
@@ -160,15 +164,12 @@ void IrcClient::JoinRoom(const std::string& nick, const std::string& room_name)
     // like this: {'room': is_connected}
 
     // To join string like ":lite5 JOIN #test_room_name" should be sent
-    std::string send_str;
-    bool verbose = true;
-
-    send_str = ":" + nick + " JOIN " + room_name + "\r\n";
-    SendOrDie(send_str, verbose);
+    std::string send_str = ":" + nick + " JOIN " + room_name + "\r\n";
+    SendOrDie(send_str);
 
     // after joining to the room start logging users' messages
-    logger_.EnableLogging();
-    logger_.Log("[+] Successfully joined to " + room_name);
+    messages_logger_.EnableLogging();
+    logger_.Log("Successfully joined to " + room_name);
 }
 
 void IrcClient::Communicate()
@@ -202,22 +203,18 @@ void IrcClient::Communicate()
             res = recv(socket_, recv_buf, sizeof(recv_buf)-1, kNoFlags);
             if (res == -1)
             {
-                perror("recv failed!");
-                logger_.Log("recv failed!");
-
+                logger_.Log("recv failed!" + std::string(strerror(errno)));
                 throw std::runtime_error("recv error");
             }
             else if (res == kRecvConnectionClosedByPeer)
             {
-                logger_.Log("[D] Peer closed the connection? Will try to reconnect");
-                std::cerr << "Peer closed the connection? Will try to reconnect" << std::endl;
+                logger_.Log("Peer closed the connection? Will try to reconnect");
                 return;
             }
 
             converter.ConvertBuffer(recv_buf, kRecvBufLen, iconv_buf, kIconvBufLen);
 
-            std::cerr << "received: " << std::endl;
-            std::cerr << iconv_buf << std::endl;
+            logger_.Log("received: \"" + RemoveTrailingCRLF(std::string(iconv_buf)) + "\"");
 
             std::vector<std::string> const messages = SplitOnLines(iconv_buf);
             for (const auto& msg : messages)
@@ -228,7 +225,7 @@ void IrcClient::Communicate()
                 }
 
                 Message message(msg);
-                LogPrettifiedMessage(message.GetStringForLogging());
+                messages_logger_.Log(RemoveTrailingCRLF(message.GetStringForLogging()));
             }
         }
         else if (ready == 0)
@@ -242,9 +239,7 @@ void IrcClient::Communicate()
         }
         else if (ready == -1)
         {
-            perror("poll failed!");
-            logger_.Log("poll failed!");
-
+            logger_.Log("poll failed!" + std::string(strerror(errno)));
             throw std::runtime_error("poll error");
         }
     }
@@ -257,26 +252,22 @@ void IrcClient::SendPONG(const char* recv_buf)
     {
         return;
     }
-    std::cerr << "[D] got PING: " << std::endl << recv_buf << std::endl;
     const std::string kPongString = std::string("PONG");
 
     std::string received_str = std::string(recv_buf);
     size_t pos = received_str.find(":");
 
     std::string pong_msg = kPongString + " " + config_.nick() + " ";
-    if (pos != std::string::npos)
+    if (pos == std::string::npos)
     {
-        // msg is smth like ":77E488E"
-        std::string msg = received_str.substr(pos);
-        pong_msg += msg;
-        std::cerr << "[D] Sending PONG msg: " << pong_msg << std::endl;
-        SendOrDie(pong_msg, true);
-    }
-    else
-    {
-        perror("SendPONG() error!");
+        logger_.Log("SendPONG() error: malformed PING?");
         return;
     }
+
+    // msg is smth like ":77E488E"
+    std::string msg = received_str.substr(pos);
+    pong_msg += msg;
+    SendOrDie(pong_msg);
 }
 
 bool IrcClient::IsAutomaticallyHandledMsg(const char* recv_buf)
@@ -294,40 +285,16 @@ bool IrcClient::IsAutomaticallyHandledMsg(const char* recv_buf)
     return false;
 }
 
-void IrcClient::SendOrDie(const std::string& send_str, bool verbose)
+void IrcClient::SendOrDie(const std::string& send_str)
 {
     int res = 0;
     res = send(socket_, send_str.c_str(), send_str.length(), kNoFlags);
     if (res == -1)
     {
-        perror("send failed!");
-
-        throw std::runtime_error("send error");
-    }
-    else if(verbose)
-    {
-        std::cerr << "SendOrDie(): '" << send_str << "' successfully sent" << std::endl;
-    }
-}
-
-void IrcClient::LogPrettifiedMessage(const std::string& message)
-{
-    if (message.empty())
-    {
-        logger_.Log("[!] empty message");
-    }
-    if (message.find("PING :") != std::string::npos)
-    {
-        return;
+        const std::string error_message = "send error: " + std::string(strerror(errno));
+        logger_.Log(error_message);
+        throw std::runtime_error(error_message);
     }
 
-    std::string log_message = message;
-
-    size_t pos = message.rfind("\r\n");
-    if (pos != std::string::npos)
-    {
-        log_message = message.substr(0, pos);
-    }
-
-    logger_.Log(log_message);
+    logger_.Log("Successfully sent \"" + RemoveTrailingCRLF(send_str) + "\"");
 }

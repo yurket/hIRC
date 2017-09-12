@@ -1,6 +1,8 @@
 #include <string>
 #include <unordered_map>
 
+class Logger;
+
 class Message
 {
     enum CommandType
@@ -22,6 +24,7 @@ private:
     CommandType GetCommandFromMessageString(const std::string& message) const;
 
 private:
+    Logger& logger_;
     std::string message_;
     CommandType command_;
     std::unordered_map<std::string, std::string> colored_nicknames_;

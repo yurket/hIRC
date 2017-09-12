@@ -37,11 +37,11 @@ private:
 
     bool IsAutomaticallyHandledMsg(const char* in_buf);
     void SendPONG(const char* recv_buf);
-    void SendOrDie(const std::string& send_str, bool verbose=false);
-    void LogPrettifiedMessage(const std::string& message);
+    void SendOrDie(const std::string& send_str);
 
     int socket_;
-    Logger logger_;
+    Logger& messages_logger_;
+    Logger& logger_;
     XmlConfig config_;
 };
 

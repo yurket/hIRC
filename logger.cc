@@ -1,15 +1,17 @@
 #include "logger.h"
 
+#include <cassert>
+#include <ctime>
 #include <iostream>
 #include <stdexcept>
-
-#include <ctime>
 
 namespace
 {
 
+RegisteredLoggers registered_loggers;
+std::mutex registered_loggers_mutex;
+
 const std::string Delimiter = "\n================================================================================\n";
-const std::string LogBasename = "IrcHistory";
 const std::size_t StrftimeBufferLen = 100;
 
 std::string GetStringFromStrftimeFormat(const std::string& format_string)
@@ -24,6 +26,35 @@ std::string GetStringFromStrftimeFormat(const std::string& format_string)
 }
 
 } // namespace
+
+bool Logger::Register(const std::string& logger_name, const std::string& log_filename)
+{
+    assert(!logger_name.empty());
+    assert(!log_filename.empty());
+
+    if (registered_loggers.find(logger_name) != registered_loggers.end())
+    {
+        std::cerr << "Logger with name \"" << logger_name << "\" already registered." << std::endl;
+        return false;
+    }
+
+    std::lock_guard<std::mutex> lock(registered_loggers_mutex);
+    registered_loggers[logger_name] = std::make_unique<Logger>(log_filename);
+    return true;
+}
+
+Logger& Logger::Get(const std::string& logger_name)
+{
+    assert(!logger_name.empty());
+
+    auto it = registered_loggers.find(logger_name);
+    if (it == registered_loggers.end())
+    {
+        const std::string m = "Logger with name \"" + logger_name +  "\" is not registered.";
+        throw std::runtime_error(m);
+    }
+    return *(it->second);
+}
 
 Logger::Logger(const std::string& filename, const std::fstream::openmode mode) :
     logging_enabled_(true)
@@ -56,13 +87,32 @@ Logger& Logger::operator= (Logger&& rhs)
 
 void Logger::Log(const std::string& s)
 {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     if (!logging_enabled_)
     {
         return;
     }
 
-    const std::string hour_minutes_seconds = GetStringFromStrftimeFormat("%T");
+    const std::string hour_minutes_seconds = GetStringFromStrftimeFormat("%F %T");
     file_stream_ << hour_minutes_seconds << ": "  << s << std::endl;
+    file_stream_.flush();
+}
+
+void Logger::Log(const char* format_string)
+{
+    assert(format_string != nullptr);
+
+    const char* s = format_string;
+    while (*s)
+    {
+        if (*s == '%' && *++s != '%')
+        {
+            throw std::runtime_error("No arguments were passed with format string \""
+                                     + std::string(format_string) + "\"");
+        }
+        file_stream_ << *s++;
+    }
     file_stream_.flush();
 }
 

@@ -5,6 +5,7 @@
 
 #include <iconv.h>
 
+class Logger;
 
 class LibiconvWrapper
 {
@@ -22,6 +23,7 @@ public:
 private:
     void ResetConversionDescriptor();
 
+    Logger& logger_;
     iconv_t conversion_descriptor_;
     std::string fromcode_;
     std::string tocode_;
