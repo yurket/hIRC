@@ -7,6 +7,9 @@
 #include <iostream>
 #include <thread>
 
+namespace
+{
+
 void InitLogging()
 {
     if (!Logger::Register("history", "history.txt"))
@@ -19,6 +22,9 @@ void InitLogging()
         std::cerr << "Failed to register \"general\" logger." << std::endl;
     }
 }
+
+}
+
 
 int main()
 {
