@@ -141,7 +141,7 @@ void IrcClient::Connect(const std::string& server_ip, const unsigned short serve
         logger_.Log(error_message);
         throw std::runtime_error(error_message);
     }
-    logger_.Log("Successfully connected");
+    logger_.Log("Successfully connected to server %s:%d", server_ip, server_port);
 }
 
 void IrcClient::Register(const std::string& nick, const std::string& real_name)
@@ -185,8 +185,9 @@ void IrcClient::Communicate()
     const unsigned int nfds = 1;
     const unsigned int timeout_in_msecs = 1000;
 
+    const unsigned int five_mins_in_seconds = 5 * 60;
     unsigned int no_new_info_counter = 0;
-    bool client_joined = false;
+    bool first_time_joined = false;
 
     LibiconvWrapper converter(config_.encoding(), "UTF-8");
     while(1)
@@ -230,11 +231,18 @@ void IrcClient::Communicate()
         }
         else if (ready == 0)
         {
-            no_new_info_counter++;
-            if (no_new_info_counter >= 3 && !client_joined)
+            if (!first_time_joined)
             {
+                first_time_joined = true;
+                logger_.Log("Joining room \"%s\" for the first time", config_.room());
                 JoinRoom(config_.nick(), config_.room());
-                client_joined = true;
+            }
+
+            no_new_info_counter++;
+            if (no_new_info_counter >= five_mins_in_seconds)
+            {
+                logger_.Log("Trying to rejoin because of no incoming messages during %d seconds", five_mins_in_seconds);
+                JoinRoom(config_.nick(), config_.room());
             }
         }
         else if (ready == -1)
@@ -296,5 +304,5 @@ void IrcClient::SendOrDie(const std::string& send_str)
         throw std::runtime_error(error_message);
     }
 
-    logger_.Log("Successfully sent \"" + RemoveTrailingCRLF(send_str) + "\"");
+    logger_.Log("Successfully sent \"%s\"", RemoveTrailingCRLF(send_str));
 }

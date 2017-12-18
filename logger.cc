@@ -113,6 +113,7 @@ void Logger::Log(const char* format_string)
         }
         file_stream_ << *s++;
     }
+    file_stream_ << std::endl;
     file_stream_.flush();
 }
 
